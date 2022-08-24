@@ -456,16 +456,6 @@ namespace Json {
 # endif // # ifdef JSON_VALUE_USE_INTERNAL_MAP
 
    private:
-      struct CommentInfo
-      {
-         CommentInfo();
-         ~CommentInfo();
-
-         void setComment( const char *text );
-
-         char *comment_;
-      };
-
       //struct MemberNamesTransform
       //{
       //   typedef const char *result_type;
@@ -495,7 +485,6 @@ namespace Json {
       unsigned int itemIsUsed_ : 1;      // used by the ValueInternalMap container.
       int memberNameIsStatic_ : 1;       // used by the ValueInternalMap container.
 # endif
-      CommentInfo *comments_;
    };
 
 

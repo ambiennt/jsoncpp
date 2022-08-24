@@ -92,41 +92,6 @@ releaseStringValue( char *value )
 # include "json_valueiterator.inl"
 #endif // if !defined(JSON_IS_AMALGAMATION)
 
-namespace Json {
-
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// class Value::CommentInfo
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-
-
-Value::CommentInfo::CommentInfo()
-   : comment_( 0 )
-{
-}
-
-Value::CommentInfo::~CommentInfo()
-{
-   if ( comment_ )
-      releaseStringValue( comment_ );
-}
-
-
-void 
-Value::CommentInfo::setComment( const char *text )
-{
-   if ( comment_ )
-      releaseStringValue( comment_ );
-   JSON_ASSERT( text != 0 );
-   JSON_ASSERT_MESSAGE( text[0]=='\0' || text[0]=='/', "Comments must start with /");
-   // It seems that /**/ style comments are acceptable as well.
-   comment_ = duplicateStringValue( text );
-}
-
-
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
@@ -447,16 +412,6 @@ Value::Value( const Value &other )
 #endif
    default:
       JSON_ASSERT_UNREACHABLE;
-   }
-   if ( other.comments_ )
-   {
-      comments_ = new CommentInfo[numberOfCommentPlacement];
-      for ( int comment =0; comment < numberOfCommentPlacement; ++comment )
-      {
-         const CommentInfo &otherComment = other.comments_[comment];
-         if ( otherComment.comment_ )
-            comments_[comment].setComment( otherComment.comment_ );
-      }
    }
 }
 
@@ -1438,9 +1393,6 @@ void
 Value::setComment( const char *comment,
                    CommentPlacement placement )
 {
-   if ( !comments_ )
-      comments_ = new CommentInfo[numberOfCommentPlacement];
-   comments_[placement].setComment( comment );
 }
 
 
