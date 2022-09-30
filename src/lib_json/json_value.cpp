@@ -464,7 +464,7 @@ Value::type() const
 }
 
 
-int 
+int
 Value::compare( const Value &other ) const
 {
    if ( *this < other )
@@ -1376,8 +1376,8 @@ Value::isObject() const
 
 
 void 
-Value::setComment( const char *comment,
-                   CommentPlacement placement )
+Value::setComment( [[maybe_unused]] const char *comment,
+                   [[maybe_unused]] CommentPlacement placement )
 {
 }
 
@@ -1391,13 +1391,13 @@ Value::setComment( const std::string &comment,
 
 
 bool 
-Value::hasComment( CommentPlacement placement ) const
+Value::hasComment( [[maybe_unused]] CommentPlacement placement ) const
 {
    return false;
 }
 
 std::string 
-Value::getComment( CommentPlacement placement ) const
+Value::getComment( [[maybe_unused]] CommentPlacement placement ) const
 {
    return "";
 }
@@ -1647,7 +1647,7 @@ Path::makePath( const std::string &path,
 
 
 void 
-Path::addPathInArg( const std::string &path, 
+Path::addPathInArg( [[maybe_unused]] const std::string &path,
                     const InArgs &in, 
                     InArgs::const_iterator &itInArg, 
                     PathArgument::Kind kind )
@@ -1668,8 +1668,8 @@ Path::addPathInArg( const std::string &path,
 
 
 void 
-Path::invalidPath( const std::string &path, 
-                   int location )
+Path::invalidPath( [[maybe_unused]] const std::string &path,
+                   [[maybe_unused]] int location )
 {
    // Error: invalid path.
 }
