@@ -92,6 +92,8 @@ releaseStringValue( char *value )
 # include "json_valueiterator.inl"
 #endif // if !defined(JSON_IS_AMALGAMATION)
 
+namespace Json {
+
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
@@ -244,7 +246,6 @@ Value::Value( ValueType type )
 #if defined(JSON_HAS_INT64)
 Value::Value( UInt value )
    : type_( uintValue )
-   , comments_( 0 )
 # ifdef JSON_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
@@ -266,7 +267,6 @@ Value::Value( Int value )
 
 Value::Value( Int64 value )
    : type_( intValue )
-   , comments_( 0 )
 # ifdef JSON_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
