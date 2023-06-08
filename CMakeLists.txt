@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(jsoncpp)
 
+set(CMAKE_CXX_STANDARD 20)
+
 set(SOURCES_JSONCPP
         "src/lib_json/json_batchallocator.h"
         "src/lib_json/json_internalarray.inl"
