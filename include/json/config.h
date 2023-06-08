@@ -33,6 +33,9 @@
 /// Remarks: it is automatically defined in the generated amalgated header.
 // #define JSON_IS_AMALGAMATION
 
+/// If defined, all asserts will be enabled. Else, they will have no effect
+/// Remarks: defining this macro enables the functionality of: JSON_ASSERT_UNREACHABLE, JSON_ASSERT, JSON_FAIL_MESSAGE, and JSON_ASSERT_MESSAGE
+//# define JSON_ENABLE_ASSERTS 1
 
 # ifdef JSON_IN_CPPTL
 #  include <cpptl/config.h>

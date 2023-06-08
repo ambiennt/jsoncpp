@@ -21,10 +21,17 @@
 #include <cstddef>    // size_t
 #include <cmath>      // std::nextafter
 
+#ifdef JSON_ENABLE_ASSERTS
 #define JSON_ASSERT_UNREACHABLE assert( false )
 #define JSON_ASSERT( condition ) assert( condition );  // @todo <= change this into an exception throw
 #define JSON_FAIL_MESSAGE( message ) throw std::runtime_error( message );
 #define JSON_ASSERT_MESSAGE( condition, message ) if (!( condition )) JSON_FAIL_MESSAGE( message )
+#else
+#define JSON_ASSERT_UNREACHABLE break
+#define JSON_ASSERT( condition ) static_cast<void>(0)
+#define JSON_FAIL_MESSAGE( message ) static_cast<void>(0)
+#define JSON_ASSERT_MESSAGE( condition, message ) static_cast<void>(0)
+#endif
 
 namespace Json {
 
@@ -611,12 +618,14 @@ Value::asString( const std::string& defaultValue ) const
    case uintValue:
    case realValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to string" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return ""; // unreachable
+   return defaultValue; // unreachable
 }
 
 # ifdef JSON_USE_CPPTL
@@ -648,12 +657,14 @@ Value::asInt( Value::Int defaultValue ) const
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to int" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 
@@ -678,12 +689,14 @@ Value::asUInt( Value::UInt defaultValue ) const
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to uint" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 
@@ -708,12 +721,14 @@ Value::asInt64( Value::Int64 defaultValue ) const
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to Int64" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 
@@ -736,12 +751,14 @@ Value::asUInt64( Value::UInt64 defaultValue ) const
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to UInt64" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0; // unreachable;
+   return defaultValue; // unreachable;
 }
 # endif // if defined(JSON_HAS_INT64)
 
@@ -750,7 +767,7 @@ LargestInt
 Value::asLargestInt() const
 {
 #if defined(JSON_NO_INT64)
-    return asInt();
+    return asInt( 0 );
 #else
     return asInt64( 0 );
 #endif
@@ -761,7 +778,7 @@ LargestUInt
 Value::asLargestUInt() const
 {
 #if defined(JSON_NO_INT64)
-    return asUInt();
+    return asUInt( 0 );
 #else
     return asUInt64( 0 );
 #endif
@@ -789,12 +806,14 @@ Value::asDouble( double defaultValue ) const
       return value_.bool_ ? 1.0 : 0.0;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to double" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 float
@@ -818,12 +837,14 @@ Value::asFloat( float defaultValue ) const
       return value_.bool_ ? 1.0f : 0.0f;
    case stringValue:
    case arrayValue:
-   case objectValue:
+   case objectValue: {
       JSON_FAIL_MESSAGE( "Type is not convertible to float" );
+      break;
+   }
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return 0.0f; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 bool 
@@ -848,7 +869,7 @@ Value::asBool( bool defaultValue ) const
    default:
       JSON_ASSERT_UNREACHABLE;
    }
-   return false; // unreachable;
+   return defaultValue; // unreachable;
 }
 
 
