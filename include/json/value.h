@@ -259,19 +259,19 @@ namespace Json {
       int compare( const Value &other ) const;
 
       const char *asCString() const;
-      std::string asString() const;
+      std::string asString( const std::string &defaultValue = "" ) const;
 # ifdef JSON_USE_CPPTL
       CppTL::ConstString asConstString() const;
 # endif
-      Int asInt() const;
-      UInt asUInt() const;
-      Int64 asInt64() const;
-      UInt64 asUInt64() const;
+      Int asInt( Value::Int defaultValue = 0 ) const;
+      UInt asUInt( Value::UInt defaultValue = 0 ) const;
+      Int64 asInt64( Value::Int64 defaultValue = 0 ) const;
+      UInt64 asUInt64( Value::UInt64 defaultValue = 0 ) const;
       LargestInt asLargestInt() const;
       LargestUInt asLargestUInt() const;
-      float asFloat() const;
-      double asDouble() const;
-      bool asBool() const;
+      float asFloat( float defaultValue = 0.0f ) const;
+      double asDouble( double defaultValue = 0.0 ) const;
+      bool asBool( bool defaultValue = false ) const;
 
       bool isNull() const;
       bool isBool() const;

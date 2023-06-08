@@ -596,12 +596,12 @@ Value::asCString() const
 
 
 std::string 
-Value::asString() const
+Value::asString( const std::string& defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return "";
+      return defaultValue;
    case stringValue:
       return value_.string_ ? value_.string_ : "";
    case booleanValue:
@@ -628,12 +628,12 @@ Value::asConstString() const
 
 
 Value::Int 
-Value::asInt() const
+Value::asInt( Value::Int defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0;
+      return defaultValue;
    case intValue:
       JSON_ASSERT_MESSAGE( value_.int_ >= minInt  &&  value_.int_ <= maxInt, "unsigned integer out of signed int range" );
       return Int(value_.int_);
@@ -657,12 +657,12 @@ Value::asInt() const
 
 
 Value::UInt 
-Value::asUInt() const
+Value::asUInt( Value::UInt defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0;
+      return defaultValue;
    case intValue:
       JSON_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to unsigned integer" );
       JSON_ASSERT_MESSAGE( value_.int_ <= maxUInt, "signed integer out of UInt range" );
@@ -689,12 +689,12 @@ Value::asUInt() const
 # if defined(JSON_HAS_INT64)
 
 Value::Int64
-Value::asInt64() const
+Value::asInt64( Value::Int64 defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0;
+      return defaultValue;
    case intValue:
       return value_.int_;
    case uintValue:
@@ -717,12 +717,12 @@ Value::asInt64() const
 
 
 Value::UInt64
-Value::asUInt64() const
+Value::asUInt64( Value::UInt64 defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0;
+      return defaultValue;
    case intValue:
       JSON_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to UInt64" );
       return value_.int_;
@@ -751,7 +751,7 @@ Value::asLargestInt() const
 #if defined(JSON_NO_INT64)
     return asInt();
 #else
-    return asInt64();
+    return asInt64( 0 );
 #endif
 }
 
@@ -762,18 +762,18 @@ Value::asLargestUInt() const
 #if defined(JSON_NO_INT64)
     return asUInt();
 #else
-    return asUInt64();
+    return asUInt64( 0 );
 #endif
 }
 
 
 double 
-Value::asDouble() const
+Value::asDouble( double defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0.0;
+      return defaultValue;
    case intValue:
       return static_cast<double>( value_.int_ );
    case uintValue:
@@ -797,12 +797,12 @@ Value::asDouble() const
 }
 
 float
-Value::asFloat() const
+Value::asFloat( float defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return 0.0f;
+      return defaultValue;
    case intValue:
       return static_cast<float>( value_.int_ );
    case uintValue:
@@ -826,12 +826,12 @@ Value::asFloat() const
 }
 
 bool 
-Value::asBool() const
+Value::asBool( bool defaultValue ) const
 {
    switch ( type_ )
    {
    case nullValue:
-      return false;
+      return defaultValue;
    case intValue:
    case uintValue:
       return value_.int_ != 0;
