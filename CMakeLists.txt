@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project(jsoncpp)
 
-set(CMAKE_CXX_STANDARD 20)
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 
 set(SOURCES_JSONCPP
         "src/lib_json/json_batchallocator.h"
