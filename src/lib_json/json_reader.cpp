@@ -872,7 +872,7 @@ std::istream& operator>>( std::istream &sin, Value &root )
     Json::Reader reader;
     bool ok = reader.parse(sin, root, true);
     //JSON_ASSERT( ok );
-    if (!ok) throw std::runtime_error(reader.getFormattedErrorMessages());
+    if (!ok) JSON_FAIL_MESSAGE(reader.getFormattedErrorMessages());
     return sin;
 }
 

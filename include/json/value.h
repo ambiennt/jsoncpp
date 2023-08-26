@@ -21,6 +21,18 @@
 #  include <cpptl/forwards.h>
 # endif
 
+#ifdef JSON_ENABLE_ASSERTS
+#define JSON_ASSERT_UNREACHABLE assert( false )
+#define JSON_ASSERT( condition ) assert( condition );  // @todo <= change this into an exception throw
+#define JSON_FAIL_MESSAGE( message ) throw std::runtime_error( message );
+#define JSON_ASSERT_MESSAGE( condition, message ) if (!( condition )) JSON_FAIL_MESSAGE( message )
+#else
+#define JSON_ASSERT_UNREACHABLE break
+#define JSON_ASSERT( condition ) static_cast<void>(0)
+#define JSON_FAIL_MESSAGE( message ) static_cast<void>(0)
+#define JSON_ASSERT_MESSAGE( condition, message ) static_cast<void>(0)
+#endif
+
 /** \brief JSON (JavaScript Object Notation).
  */
 namespace Json {
