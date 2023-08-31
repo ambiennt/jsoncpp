@@ -3,34 +3,34 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSON_H_INCLUDED
-# define CPPTL_JSON_H_INCLUDED
+#ifndef CPPTL_JSONCPP_H_INCLUDED
+# define CPPTL_JSONCPP_H_INCLUDED
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include "forwards.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 # include <string>
 # include <vector>
 
-# ifndef JSON_USE_CPPTL_SMALLMAP
+# ifndef JSONCPP_USE_CPPTL_SMALLMAP
 #  include <map>
 # else
 #  include <cpptl/smallmap.h>
 # endif
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 #  include <cpptl/forwards.h>
 # endif
 
-#ifdef JSON_ENABLE_ASSERTS
-#define JSON_ASSERT_UNREACHABLE assert( false )
-#define JSON_ASSERT( condition ) assert( condition );  // @todo <= change this into an exception throw
-#define JSON_FAIL_MESSAGE( message ) throw std::runtime_error( message );
-#define JSON_ASSERT_MESSAGE( condition, message ) if (!( condition )) JSON_FAIL_MESSAGE( message )
+#ifdef JSONCPP_ENABLE_ASSERTS
+#define JSONCPP_ASSERT_UNREACHABLE assert( false )
+#define JSONCPP_ASSERT( condition ) assert( condition );  // @todo <= change this into an exception throw
+#define JSONCPP_FAIL_MESSAGE( message ) throw std::runtime_error( message );
+#define JSONCPP_ASSERT_MESSAGE( condition, message ) if (!( condition )) JSONCPP_FAIL_MESSAGE( message )
 #else
-#define JSON_ASSERT_UNREACHABLE break
-#define JSON_ASSERT( condition ) static_cast<void>(0)
-#define JSON_FAIL_MESSAGE( message ) static_cast<void>(0)
-#define JSON_ASSERT_MESSAGE( condition, message ) static_cast<void>(0)
+#define JSONCPP_ASSERT_UNREACHABLE break
+#define JSONCPP_ASSERT( condition ) static_cast<void>(0)
+#define JSONCPP_FAIL_MESSAGE( message ) static_cast<void>(0)
+#define JSONCPP_ASSERT_MESSAGE( condition, message ) static_cast<void>(0)
 #endif
 
 /** \brief JSON (JavaScript Object Notation).
@@ -59,7 +59,7 @@ namespace Json {
       numberOfCommentPlacement
    };
 
-//# ifdef JSON_USE_CPPTL
+//# ifdef JSONCPP_USE_CPPTL
 //   typedef CppTL::AnyEnumerator<const char *> EnumMemberNames;
 //   typedef CppTL::AnyEnumerator<const Value &> EnumValues;
 //# endif
@@ -78,7 +78,7 @@ namespace Json {
     * object[code] = 1234;
     * \endcode
     */
-   class JSON_API StaticString
+   class JSONCPP_API StaticString
    {
    public:
       explicit StaticString( const char *czstring )
@@ -127,10 +127,10 @@ namespace Json {
     * It is possible to iterate over the list of a #objectValue values using 
     * the getMemberNames() method.
     */
-   class JSON_API Value 
+   class JSONCPP_API Value 
    {
       friend class ValueIteratorBase;
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
       friend class ValueInternalLink;
       friend class ValueInternalMap;
 # endif
@@ -140,10 +140,10 @@ namespace Json {
       typedef ValueConstIterator const_iterator;
       typedef Json::UInt UInt;
       typedef Json::Int Int;
-# if defined(JSON_HAS_INT64)
+# if defined(JSONCPP_HAS_INT64)
       typedef Json::UInt64 UInt64;
       typedef Json::Int64 Int64;
-#endif // defined(JSON_HAS_INT64)
+#endif // defined(JSONCPP_HAS_INT64)
       typedef Json::LargestInt LargestInt;
       typedef Json::LargestUInt LargestUInt;
       typedef Json::ArrayIndex ArrayIndex;
@@ -172,7 +172,7 @@ namespace Json {
 
    private:
 #ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION
-# ifndef JSON_VALUE_USE_INTERNAL_MAP
+# ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
       class CZString 
       {
       public:
@@ -199,12 +199,12 @@ namespace Json {
       };
 
    public:
-#  ifndef JSON_USE_CPPTL_SMALLMAP
+#  ifndef JSONCPP_USE_CPPTL_SMALLMAP
       typedef std::map<CZString, Value> ObjectValues;
 #  else
       typedef CppTL::SmallMap<CZString, Value> ObjectValues;
-#  endif // ifndef JSON_USE_CPPTL_SMALLMAP
-# endif // ifndef JSON_VALUE_USE_INTERNAL_MAP
+#  endif // ifndef JSONCPP_USE_CPPTL_SMALLMAP
+# endif // ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 #endif // ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION
 
    public:
@@ -226,10 +226,10 @@ namespace Json {
       Value( ValueType type = nullValue );
       Value( Int value );
       Value( UInt value );
-#if defined(JSON_HAS_INT64)
+#if defined(JSONCPP_HAS_INT64)
       Value( Int64 value );
       Value( UInt64 value );
-#endif // if defined(JSON_HAS_INT64)
+#endif // if defined(JSONCPP_HAS_INT64)
       Value( double value );
       Value( const char *value );
       Value( const char *beginValue, const char *endValue );
@@ -245,7 +245,7 @@ namespace Json {
        */
       Value( const StaticString &value );
       Value( const std::string &value );
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
       Value( const CppTL::ConstString &value );
 # endif
       Value( bool value );
@@ -272,7 +272,7 @@ namespace Json {
 
       const char *asCString() const;
       std::string asString( const std::string &defaultValue = "" ) const;
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
       CppTL::ConstString asConstString() const;
 # endif
       Int asInt( Value::Int defaultValue = 0 ) const;
@@ -375,7 +375,7 @@ namespace Json {
        * \endcode
        */
       Value &operator[]( const StaticString &key );
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
       /// Access an object value by name, create a null member if it does not exist.
       Value &operator[]( const CppTL::ConstString &key );
       /// Access an object value by name, returns null if there is no member with that name.
@@ -387,7 +387,7 @@ namespace Json {
       /// Return the member named key if it exist, defaultValue otherwise.
       Value get( const std::string &key,
                  const Value &defaultValue ) const;
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
       /// Return the member named key if it exist, defaultValue otherwise.
       Value get( const CppTL::ConstString &key,
                  const Value &defaultValue ) const;
@@ -406,7 +406,7 @@ namespace Json {
       bool isMember( const char *key ) const;
       /// Return true if the object has a member named key.
       bool isMember( const std::string &key ) const;
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
       /// Return true if the object has a member named key.
       bool isMember( const CppTL::ConstString &key ) const;
 # endif
@@ -418,7 +418,7 @@ namespace Json {
       /// \post if type() was nullValue, it remains nullValue
       Members getMemberNames() const;
 
-//# ifdef JSON_USE_CPPTL
+//# ifdef JSONCPP_USE_CPPTL
 //      EnumMemberNames enumMemberNames() const;
 //      EnumValues enumValues() const;
 //# endif
@@ -445,7 +445,7 @@ namespace Json {
       Value &resolveReference( const char *key, 
                                bool isStatic );
 
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
       inline bool isItemAvailable() const
       {
          return itemIsUsed_ == 0;
@@ -465,7 +465,7 @@ namespace Json {
       {
          memberNameIsStatic_ = isStatic ? 1 : 0;
       }
-# endif // # ifdef JSON_VALUE_USE_INTERNAL_MAP
+# endif // # ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
 
    private:
       //struct MemberNamesTransform
@@ -484,7 +484,7 @@ namespace Json {
          double real_;
          bool bool_;
          char *string_;
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
          ValueInternalArray *array_;
          ValueInternalMap *map_;
 #else
@@ -493,7 +493,7 @@ namespace Json {
       } value_;
       ValueType type_ : 8;
       unsigned int allocated_ : 1;     // Notes: if declared as bool, bitfield is useless.
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
       unsigned int itemIsUsed_ : 1;      // used by the ValueInternalMap container.
       int memberNameIsStatic_ : 1;       // used by the ValueInternalMap container.
 # endif
@@ -569,7 +569,7 @@ namespace Json {
 
 
 
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    /** \brief Allocator to customize Value internal map.
     * Below is an example of a simple implementation (default implementation actually
     * use memory pool for speed).
@@ -614,7 +614,7 @@ namespace Json {
       };
     * \endcode
     */ 
-   class JSON_API ValueMapAllocator
+   class JSONCPP_API ValueMapAllocator
    {
    public:
       virtual ~ValueMapAllocator();
@@ -630,7 +630,7 @@ namespace Json {
    /** \brief ValueInternalMap hash-map bucket chain link (for internal use only).
     * \internal previous_ & next_ allows for bidirectional traversal.
     */
-   class JSON_API ValueInternalLink
+   class JSONCPP_API ValueInternalLink
    {
    public:
       enum { itemPerLink = 6 };  // sizeof(ValueInternalLink) = 128 on 32 bits architecture.
@@ -662,7 +662,7 @@ namespace Json {
     * Only the last link of a bucket may contains 'available' item. The last link always
     * contains at least one element unless is it the bucket one very first link.
     */
-   class JSON_API ValueInternalMap
+   class JSONCPP_API ValueInternalMap
    {
       friend class ValueIteratorBase;
       friend class Value;
@@ -760,7 +760,7 @@ namespace Json {
    * Insertion is amortized constant time (only the array containing the index of pointers
    * need to be reallocated when items are appended).
    */
-   class JSON_API ValueInternalArray
+   class JSONCPP_API ValueInternalArray
    {
       friend class Value;
       friend class ValueIteratorBase;
@@ -879,7 +879,7 @@ public: // overridden from ValueArrayAllocator
 };
       \endcode
     */ 
-   class JSON_API ValueArrayAllocator
+   class JSONCPP_API ValueArrayAllocator
    {
    public:
       virtual ~ValueArrayAllocator();
@@ -905,7 +905,7 @@ public: // overridden from ValueArrayAllocator
       virtual Value *allocateArrayPage() = 0;
       virtual void releaseArrayPage( Value *value ) = 0;
    };
-#endif // #ifdef JSON_VALUE_USE_INTERNAL_MAP
+#endif // #ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
 
 
    /** \brief base class for Value iterators.
@@ -919,7 +919,7 @@ public: // overridden from ValueArrayAllocator
       typedef ValueIteratorBase SelfType;
 
       ValueIteratorBase();
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
       explicit ValueIteratorBase( const Value::ObjectValues::iterator &current );
 #else
       ValueIteratorBase( const ValueInternalArray::IteratorState &state );
@@ -964,7 +964,7 @@ public: // overridden from ValueArrayAllocator
       void copy( const SelfType &other );
 
    private:
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
       Value::ObjectValues::iterator current_;
       // Indicates that iterator is for a null value.
       bool isNull_;
@@ -995,7 +995,7 @@ public: // overridden from ValueArrayAllocator
    private:
       /*! \internal Use by Value to create an iterator.
        */
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
       explicit ValueConstIterator( const Value::ObjectValues::iterator &current );
 #else
       ValueConstIterator( const ValueInternalArray::IteratorState &state );
@@ -1055,7 +1055,7 @@ public: // overridden from ValueArrayAllocator
    private:
       /*! \internal Use by Value to create an iterator.
        */
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
       explicit ValueIterator( const Value::ObjectValues::iterator &current );
 #else
       ValueIterator( const ValueInternalArray::IteratorState &state );
@@ -1101,4 +1101,4 @@ public: // overridden from ValueArrayAllocator
 } // namespace Json
 
 
-#endif // CPPTL_JSON_H_INCLUDED
+#endif // CPPTL_JSONCPP_H_INCLUDED

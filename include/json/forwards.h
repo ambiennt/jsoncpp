@@ -3,12 +3,12 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef JSON_FORWARDS_H_INCLUDED
-# define JSON_FORWARDS_H_INCLUDED
+#ifndef JSONCPP_FORWARDS_H_INCLUDED
+# define JSONCPP_FORWARDS_H_INCLUDED
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include "config.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 
 namespace Json {
 
@@ -31,14 +31,14 @@ namespace Json {
    class ValueIteratorBase;
    class ValueIterator;
    class ValueConstIterator;
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    class ValueMapAllocator;
    class ValueInternalLink;
    class ValueInternalArray;
    class ValueInternalMap;
-#endif // #ifdef JSON_VALUE_USE_INTERNAL_MAP
+#endif // #ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
 
 } // namespace Json
 
 
-#endif // JSON_FORWARDS_H_INCLUDED
+#endif // JSONCPP_FORWARDS_H_INCLUDED

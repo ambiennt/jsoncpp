@@ -3,12 +3,12 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef JSON_WRITER_H_INCLUDED
-# define JSON_WRITER_H_INCLUDED
+#ifndef JSONCPP_WRITER_H_INCLUDED
+# define JSONCPP_WRITER_H_INCLUDED
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include "value.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 # include <vector>
 # include <string>
 # include <iostream>
@@ -19,7 +19,7 @@ namespace Json {
 
    /** \brief Abstract class for writers.
     */
-   class JSON_API Writer
+   class JSONCPP_API Writer
    {
    public:
       virtual ~Writer();
@@ -33,7 +33,7 @@ namespace Json {
     * but may be usefull to support feature such as RPC where bandwith is limited.
     * \sa Reader, Value
     */
-   class JSON_API FastWriter : public Writer
+   class JSONCPP_API FastWriter : public Writer
    {
    public:
       FastWriter();
@@ -69,7 +69,7 @@ namespace Json {
     *
     * \sa Reader, Value, Value::setComment()
     */
-   class JSON_API StyledWriter: public Writer
+   class JSONCPP_API StyledWriter: public Writer
    {
    public:
       StyledWriter();
@@ -126,7 +126,7 @@ namespace Json {
     * \param indentation Each level will be indented by this amount extra.
     * \sa Reader, Value, Value::setComment()
     */
-   class JSON_API StyledStreamWriter
+   class JSONCPP_API StyledStreamWriter
    {
    public:
       StyledStreamWriter( std::string indentation="\t" );
@@ -164,15 +164,15 @@ namespace Json {
       bool addChildValues_;
    };
 
-# if defined(JSON_HAS_INT64)
-   std::string JSON_API valueToString( Int value );
-   std::string JSON_API valueToString( UInt value );
-# endif // if defined(JSON_HAS_INT64)
-   std::string JSON_API valueToString( LargestInt value );
-   std::string JSON_API valueToString( LargestUInt value );
-   std::string JSON_API valueToString( double value );
-   std::string JSON_API valueToString( bool value );
-   std::string JSON_API valueToQuotedString( const char *value );
+# if defined(JSONCPP_HAS_INT64)
+   std::string JSONCPP_API valueToString( Int value );
+   std::string JSONCPP_API valueToString( UInt value );
+# endif // if defined(JSONCPP_HAS_INT64)
+   std::string JSONCPP_API valueToString( LargestInt value );
+   std::string JSONCPP_API valueToString( LargestUInt value );
+   std::string JSONCPP_API valueToString( double value );
+   std::string JSONCPP_API valueToString( bool value );
+   std::string JSONCPP_API valueToQuotedString( const char *value );
 
    /// \brief Output using the StyledStreamWriter.
    /// \see Json::operator>>()
@@ -182,4 +182,4 @@ namespace Json {
 
 
 
-#endif // JSON_WRITER_H_INCLUDED
+#endif // JSONCPP_WRITER_H_INCLUDED

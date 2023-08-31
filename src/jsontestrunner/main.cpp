@@ -162,10 +162,10 @@ static void
 printConfig()
 {
    // Print the configuration used to compile JsonCpp
-#if defined(JSON_NO_INT64)
-   printf( "JSON_NO_INT64=1\n" );
+#if defined(JSONCPP_NO_INT64)
+   printf( "JSONCPP_NO_INT64=1\n" );
 #else
-   printf( "JSON_NO_INT64=0\n" );
+   printf( "JSONCPP_NO_INT64=0\n" );
 #endif
 }
 

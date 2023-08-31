@@ -363,19 +363,19 @@ Runner::runTestAt( unsigned int index, TestResult &result ) const
    result.setTestName( test->testName() );
    printf( "Testing %s: ", test->testName() );
    fflush( stdout );
-#if JSON_USE_EXCEPTION
+#if JSONCPP_USE_EXCEPTION
    try 
    {
-#endif // if JSON_USE_EXCEPTION
+#endif // if JSONCPP_USE_EXCEPTION
       test->run( result );
-#if JSON_USE_EXCEPTION
+#if JSONCPP_USE_EXCEPTION
    } 
    catch ( const std::exception &e ) 
    {
       result.addFailure( __FILE__, __LINE__, 
          "Unexpected exception caugth:" ) << e.what();
    }
-#endif // if JSON_USE_EXCEPTION
+#endif // if JSONCPP_USE_EXCEPTION
    delete test;
    const char *status = result.failed() ? "FAILED" 
                                         : "OK";

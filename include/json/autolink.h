@@ -3,22 +3,22 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef JSON_AUTOLINK_H_INCLUDED
-# define JSON_AUTOLINK_H_INCLUDED
+#ifndef JSONCPP_AUTOLINK_H_INCLUDED
+# define JSONCPP_AUTOLINK_H_INCLUDED
 
 # include "config.h"
 
-# ifdef JSON_IN_CPPTL
+# ifdef JSONCPP_IN_CPPTL
 #  include <cpptl/cpptl_autolink.h>
 # endif
 
-# if !defined(JSON_NO_AUTOLINK)  &&  !defined(JSON_DLL_BUILD)  &&  !defined(JSON_IN_CPPTL)
+# if !defined(JSONCPP_NO_AUTOLINK)  &&  !defined(JSONCPP_DLL_BUILD)  &&  !defined(JSONCPP_IN_CPPTL)
 #  define CPPTL_AUTOLINK_NAME "json"
 #  undef CPPTL_AUTOLINK_DLL
-#  ifdef JSON_DLL
+#  ifdef JSONCPP_DLL
 #   define CPPTL_AUTOLINK_DLL
 #  endif
 #  include "autolink.h"
 # endif
 
-#endif // JSON_AUTOLINK_H_INCLUDED
+#endif // JSONCPP_AUTOLINK_H_INCLUDED
