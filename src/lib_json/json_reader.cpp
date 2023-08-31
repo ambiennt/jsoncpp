@@ -3,11 +3,11 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include <json/reader.h>
 # include <json/value.h>
 # include "json_tool.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 #include <utility>
 #include <cstdio>
 #include <cassert>
@@ -871,8 +871,8 @@ std::istream& operator>>( std::istream &sin, Value &root )
 {
     Json::Reader reader;
     bool ok = reader.parse(sin, root, true);
-    //JSON_ASSERT( ok );
-    if (!ok) JSON_FAIL_MESSAGE(reader.getFormattedErrorMessages());
+    //JSONCPP_ASSERT( ok );
+    if (!ok) JSONCPP_FAIL_MESSAGE(reader.getFormattedErrorMessages());
     return sin;
 }
 

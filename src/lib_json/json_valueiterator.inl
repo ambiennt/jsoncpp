@@ -16,7 +16,7 @@ namespace Json {
 // //////////////////////////////////////////////////////////////////
 
 ValueIteratorBase::ValueIteratorBase()
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    : current_()
    , isNull_( true )
 {
@@ -30,7 +30,7 @@ ValueIteratorBase::ValueIteratorBase()
 #endif
 
 
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 ValueIteratorBase::ValueIteratorBase( const Value::ObjectValues::iterator &current )
    : current_( current )
    , isNull_( false )
@@ -54,7 +54,7 @@ ValueIteratorBase::ValueIteratorBase( const ValueInternalMap::IteratorState &sta
 Value &
 ValueIteratorBase::deref() const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    return current_->second;
 #else
    if ( isArray_ )
@@ -67,7 +67,7 @@ ValueIteratorBase::deref() const
 void 
 ValueIteratorBase::increment()
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    ++current_;
 #else
    if ( isArray_ )
@@ -80,7 +80,7 @@ ValueIteratorBase::increment()
 void 
 ValueIteratorBase::decrement()
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    --current_;
 #else
    if ( isArray_ )
@@ -93,8 +93,8 @@ ValueIteratorBase::decrement()
 ValueIteratorBase::difference_type 
 ValueIteratorBase::computeDistance( const SelfType &other ) const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
-# ifdef JSON_USE_CPPTL_SMALLMAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_USE_CPPTL_SMALLMAP
    return current_ - other.current_;
 # else
    // Iterator for null value are initialized using the default
@@ -130,7 +130,7 @@ ValueIteratorBase::computeDistance( const SelfType &other ) const
 bool 
 ValueIteratorBase::isEqual( const SelfType &other ) const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    if ( isNull_ )
    {
       return other.isNull_;
@@ -147,7 +147,7 @@ ValueIteratorBase::isEqual( const SelfType &other ) const
 void 
 ValueIteratorBase::copy( const SelfType &other )
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    current_ = other.current_;
 #else
    if ( isArray_ )
@@ -160,7 +160,7 @@ ValueIteratorBase::copy( const SelfType &other )
 Value 
 ValueIteratorBase::key() const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    const Value::CZString czstring = (*current_).first;
    if ( czstring.c_str() )
    {
@@ -184,7 +184,7 @@ ValueIteratorBase::key() const
 UInt 
 ValueIteratorBase::index() const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    const Value::CZString czstring = (*current_).first;
    if ( !czstring.c_str() )
       return czstring.index();
@@ -200,7 +200,7 @@ ValueIteratorBase::index() const
 const char *
 ValueIteratorBase::memberName() const
 {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    const char *name = (*current_).first.c_str();
    return name ? name : "";
 #else
@@ -224,7 +224,7 @@ ValueConstIterator::ValueConstIterator()
 }
 
 
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 ValueConstIterator::ValueConstIterator( const Value::ObjectValues::iterator &current )
    : ValueIteratorBase( current )
 {
@@ -262,7 +262,7 @@ ValueIterator::ValueIterator()
 }
 
 
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 ValueIterator::ValueIterator( const Value::ObjectValues::iterator &current )
    : ValueIteratorBase( current )
 {

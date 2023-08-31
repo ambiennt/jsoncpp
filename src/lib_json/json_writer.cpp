@@ -3,10 +3,10 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include <json/writer.h>
 # include "json_tool.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 #include <utility>
 #include <assert.h>
 #include <stdio.h>
@@ -56,7 +56,7 @@ std::string valueToString( LargestUInt value )
    return current;
 }
 
-#if defined(JSON_HAS_INT64)
+#if defined(JSONCPP_HAS_INT64)
 
 std::string valueToString( Int value )
 {
@@ -69,7 +69,7 @@ std::string valueToString( UInt value )
    return valueToString( LargestUInt(value) );
 }
 
-#endif // # if defined(JSON_HAS_INT64)
+#endif // # if defined(JSONCPP_HAS_INT64)
 
 
 std::string valueToString( double value )

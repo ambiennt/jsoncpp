@@ -3,12 +3,12 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSON_FEATURES_H_INCLUDED
-# define CPPTL_JSON_FEATURES_H_INCLUDED
+#ifndef CPPTL_JSONCPP_FEATURES_H_INCLUDED
+# define CPPTL_JSONCPP_FEATURES_H_INCLUDED
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include "forwards.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 
 namespace Json {
 
@@ -16,7 +16,7 @@ namespace Json {
     * This configuration object can be used to force the Reader or Writer
     * to behave in a standard conforming way.
     */
-   class JSON_API Features
+   class JSONCPP_API Features
    {
    public:
       /** \brief A configuration that allows all features and assumes all strings are UTF-8.
@@ -46,4 +46,4 @@ namespace Json {
 
 } // namespace Json
 
-#endif // CPPTL_JSON_FEATURES_H_INCLUDED
+#endif // CPPTL_JSONCPP_FEATURES_H_INCLUDED

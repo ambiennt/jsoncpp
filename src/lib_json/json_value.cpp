@@ -3,19 +3,19 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include <json/value.h>
 # include <json/writer.h>
-# ifndef JSON_USE_SIMPLE_INTERNAL_ALLOCATOR
+# ifndef JSONCPP_USE_SIMPLE_INTERNAL_ALLOCATOR
 #  include "json_batchallocator.h"
-# endif // #ifndef JSON_USE_SIMPLE_INTERNAL_ALLOCATOR
-#endif // if !defined(JSON_IS_AMALGAMATION)
+# endif // #ifndef JSONCPP_USE_SIMPLE_INTERNAL_ALLOCATOR
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 #include <iostream>
 #include <utility>
 #include <stdexcept>
 #include <cstring>
 #include <cassert>
-#ifdef JSON_USE_CPPTL
+#ifdef JSONCPP_USE_CPPTL
 # include <cpptl/conststring.h>
 #endif
 #include <cstddef>    // size_t
@@ -53,7 +53,7 @@ duplicateStringValue( const char *value,
    if ( length == unknown )
       length = (unsigned int)strlen(value);
    char *newString = static_cast<char *>( malloc( length + 1 ) );
-   JSON_ASSERT_MESSAGE( newString != 0, "Failed to allocate string value buffer" );
+   JSONCPP_ASSERT_MESSAGE( newString != 0, "Failed to allocate string value buffer" );
    memcpy( newString, value, length );
    newString[length] = 0;
    return newString;
@@ -79,14 +79,14 @@ releaseStringValue( char *value )
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
-#if !defined(JSON_IS_AMALGAMATION)
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+#if !defined(JSONCPP_IS_AMALGAMATION)
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
 #  include "json_internalarray.inl"
 #  include "json_internalmap.inl"
-# endif // JSON_VALUE_USE_INTERNAL_MAP
+# endif // JSONCPP_VALUE_USE_INTERNAL_MAP
 
 # include "json_valueiterator.inl"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 
 namespace Json {
 
@@ -97,7 +97,7 @@ namespace Json {
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////
-# ifndef JSON_VALUE_USE_INTERNAL_MAP
+# ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 
 // Notes: index_ indicates if the string was allocated when
 // a string is stored.
@@ -181,7 +181,7 @@ Value::CZString::isStaticString() const
    return index_ == noDuplication;
 }
 
-#endif // ifndef JSON_VALUE_USE_INTERNAL_MAP
+#endif // ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 
 
 // //////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ Value::CZString::isStaticString() const
 Value::Value( ValueType type )
    : type_( type )
    , allocated_( 0 )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -217,7 +217,7 @@ Value::Value( ValueType type )
    case stringValue:
       value_.string_ = 0;
       break;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       value_.map_ = new ObjectValues();
@@ -234,15 +234,15 @@ Value::Value( ValueType type )
       value_.bool_ = false;
       break;
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
 }
 
 
-#if defined(JSON_HAS_INT64)
+#if defined(JSONCPP_HAS_INT64)
 Value::Value( UInt value )
    : type_( uintValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -251,19 +251,19 @@ Value::Value( UInt value )
 
 Value::Value( Int value )
    : type_( intValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
    value_.int_ = value;
 }
 
-#endif // if defined(JSON_HAS_INT64)
+#endif // if defined(JSONCPP_HAS_INT64)
 
 
 Value::Value( Int64 value )
    : type_( intValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -273,7 +273,7 @@ Value::Value( Int64 value )
 
 Value::Value( UInt64 value )
    : type_( uintValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -282,7 +282,7 @@ Value::Value( UInt64 value )
 
 Value::Value( double value )
    : type_( realValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -292,7 +292,7 @@ Value::Value( double value )
 Value::Value( const char *value )
    : type_( stringValue )
    , allocated_( true )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -304,7 +304,7 @@ Value::Value( const char *beginValue,
               const char *endValue )
    : type_( stringValue )
    , allocated_( true )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -316,7 +316,7 @@ Value::Value( const char *beginValue,
 Value::Value( const std::string &value )
    : type_( stringValue )
    , allocated_( true )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -328,7 +328,7 @@ Value::Value( const std::string &value )
 Value::Value( const StaticString &value )
    : type_( stringValue )
    , allocated_( false )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -336,11 +336,11 @@ Value::Value( const StaticString &value )
 }
 
 
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 Value::Value( const CppTL::ConstString &value )
    : type_( stringValue )
    , allocated_( true )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -350,7 +350,7 @@ Value::Value( const CppTL::ConstString &value )
 
 Value::Value( bool value )
    : type_( booleanValue )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -360,7 +360,7 @@ Value::Value( bool value )
 
 Value::Value( const Value &other )
    : type_( other.type_ )
-# ifdef JSON_VALUE_USE_INTERNAL_MAP
+# ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    , itemIsUsed_( 0 )
 #endif
 {
@@ -382,7 +382,7 @@ Value::Value( const Value &other )
       else
          value_.string_ = 0;
       break;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       value_.map_ = new ObjectValues( *other.value_.map_ );
@@ -396,7 +396,7 @@ Value::Value( const Value &other )
       break;
 #endif
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
 }
 
@@ -415,7 +415,7 @@ Value::~Value()
       if ( allocated_ )
          releaseStringValue( value_.string_ );
       break;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       delete value_.map_;
@@ -429,7 +429,7 @@ Value::~Value()
       break;
 #endif
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
 }
 
@@ -494,7 +494,7 @@ Value::operator <( const Value &other ) const
              || ( other.value_.string_  
                   &&  value_.string_  
                   && strcmp( value_.string_, other.value_.string_ ) < 0 );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       {
@@ -510,7 +510,7 @@ Value::operator <( const Value &other ) const
       return value_.map_->compare( *(other.value_.map_) ) < 0;
 #endif
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return false;  // unreachable
 }
@@ -560,7 +560,7 @@ Value::operator ==( const Value &other ) const
              || ( other.value_.string_  
                   &&  value_.string_  
                   && strcmp( value_.string_, other.value_.string_ ) == 0 );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       return value_.map_->size() == other.value_.map_->size()
@@ -572,7 +572,7 @@ Value::operator ==( const Value &other ) const
       return value_.map_->compare( *(other.value_.map_) ) == 0;
 #endif
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return false;  // unreachable
 }
@@ -586,7 +586,7 @@ Value::operator !=( const Value &other ) const
 const char *
 Value::asCString() const
 {
-   JSON_ASSERT( type_ == stringValue );
+   JSONCPP_ASSERT( type_ == stringValue );
    return value_.string_;
 }
 
@@ -607,16 +607,16 @@ Value::asString( const std::string& defaultValue ) const
    case realValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to string" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to string" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable
 }
 
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 CppTL::ConstString 
 Value::asConstString() const
 {
@@ -633,24 +633,24 @@ Value::asInt( Value::Int defaultValue ) const
    case nullValue:
       return defaultValue;
    case intValue:
-      JSON_ASSERT_MESSAGE( value_.int_ >= minInt  &&  value_.int_ <= maxInt, "unsigned integer out of signed int range" );
+      JSONCPP_ASSERT_MESSAGE( value_.int_ >= minInt  &&  value_.int_ <= maxInt, "unsigned integer out of signed int range" );
       return Int(value_.int_);
    case uintValue:
-      JSON_ASSERT_MESSAGE( value_.uint_ <= UInt(maxInt), "unsigned integer out of signed int range" );
+      JSONCPP_ASSERT_MESSAGE( value_.uint_ <= UInt(maxInt), "unsigned integer out of signed int range" );
       return Int(value_.uint_);
    case realValue:
-      JSON_ASSERT_MESSAGE( value_.real_ >= minInt  &&  value_.real_ <= maxInt, "Real out of signed integer range" );
+      JSONCPP_ASSERT_MESSAGE( value_.real_ >= minInt  &&  value_.real_ <= maxInt, "Real out of signed integer range" );
       return Int( value_.real_ );
    case booleanValue:
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to int" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to int" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
@@ -664,31 +664,31 @@ Value::asUInt( Value::UInt defaultValue ) const
    case nullValue:
       return defaultValue;
    case intValue:
-      JSON_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to unsigned integer" );
-      JSON_ASSERT_MESSAGE( value_.int_ <= maxUInt, "signed integer out of UInt range" );
+      JSONCPP_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to unsigned integer" );
+      JSONCPP_ASSERT_MESSAGE( value_.int_ <= maxUInt, "signed integer out of UInt range" );
       return UInt(value_.int_);
    case uintValue:
-      JSON_ASSERT_MESSAGE( value_.uint_ <= maxUInt, "unsigned integer out of UInt range" );
+      JSONCPP_ASSERT_MESSAGE( value_.uint_ <= maxUInt, "unsigned integer out of UInt range" );
       return UInt(value_.uint_);
    case realValue:
-      JSON_ASSERT_MESSAGE( value_.real_ >= 0  &&  value_.real_ <= maxUInt,  "Real out of unsigned integer range" );
+      JSONCPP_ASSERT_MESSAGE( value_.real_ >= 0  &&  value_.real_ <= maxUInt,  "Real out of unsigned integer range" );
       return UInt( value_.real_ );
    case booleanValue:
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to uint" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to uint" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
 
 
-# if defined(JSON_HAS_INT64)
+# if defined(JSONCPP_HAS_INT64)
 
 Value::Int64
 Value::asInt64( Value::Int64 defaultValue ) const
@@ -700,21 +700,21 @@ Value::asInt64( Value::Int64 defaultValue ) const
    case intValue:
       return value_.int_;
    case uintValue:
-      JSON_ASSERT_MESSAGE( value_.uint_ <= UInt64(maxInt64), "unsigned integer out of Int64 range" );
+      JSONCPP_ASSERT_MESSAGE( value_.uint_ <= UInt64(maxInt64), "unsigned integer out of Int64 range" );
       return value_.uint_;
    case realValue:
-      JSON_ASSERT_MESSAGE( value_.real_ >= std::nextafter(static_cast<double>(minInt64), 0.0)  &&  value_.real_ <= std::nextafter(static_cast<double>(maxInt64), 0.0), "Real out of Int64 range" );
+      JSONCPP_ASSERT_MESSAGE( value_.real_ >= std::nextafter(static_cast<double>(minInt64), 0.0)  &&  value_.real_ <= std::nextafter(static_cast<double>(maxInt64), 0.0), "Real out of Int64 range" );
       return Int( value_.real_ );
    case booleanValue:
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to Int64" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to Int64" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
@@ -728,33 +728,33 @@ Value::asUInt64( Value::UInt64 defaultValue ) const
    case nullValue:
       return defaultValue;
    case intValue:
-      JSON_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to UInt64" );
+      JSONCPP_ASSERT_MESSAGE( value_.int_ >= 0, "Negative integer can not be converted to UInt64" );
       return value_.int_;
    case uintValue:
       return value_.uint_;
    case realValue:
-      JSON_ASSERT_MESSAGE( value_.real_ >= 0  &&  value_.real_ <= std::nextafter(static_cast<double>(maxUInt64), 0.0),  "Real out of UInt64 range" );
+      JSONCPP_ASSERT_MESSAGE( value_.real_ >= 0  &&  value_.real_ <= std::nextafter(static_cast<double>(maxUInt64), 0.0),  "Real out of UInt64 range" );
       return UInt( value_.real_ );
    case booleanValue:
       return value_.bool_ ? 1 : 0;
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to UInt64" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to UInt64" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
-# endif // if defined(JSON_HAS_INT64)
+# endif // if defined(JSONCPP_HAS_INT64)
 
 
 LargestInt 
 Value::asLargestInt() const
 {
-#if defined(JSON_NO_INT64)
+#if defined(JSONCPP_NO_INT64)
     return asInt( 0 );
 #else
     return asInt64( 0 );
@@ -765,7 +765,7 @@ Value::asLargestInt() const
 LargestUInt 
 Value::asLargestUInt() const
 {
-#if defined(JSON_NO_INT64)
+#if defined(JSONCPP_NO_INT64)
     return asUInt( 0 );
 #else
     return asUInt64( 0 );
@@ -783,11 +783,11 @@ Value::asDouble( double defaultValue ) const
    case intValue:
       return static_cast<double>( value_.int_ );
    case uintValue:
-#if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
       return static_cast<double>( value_.uint_ );
-#else // if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#else // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
       return static_cast<double>( Int(value_.uint_/2) ) * 2 + Int(value_.uint_ & 1);
-#endif // if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#endif // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
    case realValue:
       return value_.real_;
    case booleanValue:
@@ -795,11 +795,11 @@ Value::asDouble( double defaultValue ) const
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to double" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to double" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
@@ -814,11 +814,11 @@ Value::asFloat( float defaultValue ) const
    case intValue:
       return static_cast<float>( value_.int_ );
    case uintValue:
-#if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
       return static_cast<float>( value_.uint_ );
-#else // if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#else // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
       return static_cast<float>( Int(value_.uint_/2) ) * 2 + Int(value_.uint_ & 1);
-#endif // if !defined(JSON_USE_INT64_DOUBLE_CONVERSION)
+#endif // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
    case realValue:
       return static_cast<float>( value_.real_ );
    case booleanValue:
@@ -826,11 +826,11 @@ Value::asFloat( float defaultValue ) const
    case stringValue:
    case arrayValue:
    case objectValue: {
-      JSON_FAIL_MESSAGE( "Type is not convertible to float" );
+      JSONCPP_FAIL_MESSAGE( "Type is not convertible to float" );
       break;
    }
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
@@ -855,7 +855,7 @@ Value::asBool( bool defaultValue ) const
    case objectValue:
       return value_.map_->size() != 0;
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return defaultValue; // unreachable;
 }
@@ -906,7 +906,7 @@ Value::isConvertibleTo( ValueType other ) const
       return other == objectValue
              ||  ( other == nullValue  &&  value_.map_->size() == 0 );
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return false; // unreachable;
 }
@@ -925,7 +925,7 @@ Value::size() const
    case booleanValue:
    case stringValue:
       return 0;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:  // size of the array is highest index + 1
       if ( !value_.map_->empty() )
       {
@@ -943,7 +943,7 @@ Value::size() const
       return Int( value_.map_->size() );
 #endif
    default:
-      JSON_ASSERT_UNREACHABLE;
+      JSONCPP_ASSERT_UNREACHABLE;
    }
    return 0; // unreachable;
 }
@@ -969,11 +969,11 @@ Value::operator!() const
 void 
 Value::clear()
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == arrayValue  || type_ == objectValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == arrayValue  || type_ == objectValue );
 
    switch ( type_ )
    {
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
    case objectValue:
       value_.map_->clear();
@@ -994,10 +994,10 @@ Value::clear()
 void 
 Value::resize( ArrayIndex newSize )
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
    if ( type_ == nullValue )
       *this = Value( arrayValue );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    ArrayIndex oldSize = size();
    if ( newSize == 0 )
       clear();
@@ -1020,10 +1020,10 @@ Value::resize( ArrayIndex newSize )
 Value &
 Value::operator[]( ArrayIndex index )
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
    if ( type_ == nullValue )
       *this = Value( arrayValue );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    CZString key( index );
    ObjectValues::iterator it = value_.map_->lower_bound( key );
    if ( it != value_.map_->end()  &&  (*it).first == key )
@@ -1041,7 +1041,7 @@ Value::operator[]( ArrayIndex index )
 Value &
 Value::operator[]( int index )
 {
-   JSON_ASSERT( index >= 0 );
+   JSONCPP_ASSERT( index >= 0 );
    return (*this)[ ArrayIndex(index) ];
 }
 
@@ -1049,10 +1049,10 @@ Value::operator[]( int index )
 const Value &
 Value::operator[]( ArrayIndex index ) const
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == arrayValue );
    if ( type_ == nullValue )
       return null;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    CZString key( index );
    ObjectValues::const_iterator it = value_.map_->find( key );
    if ( it == value_.map_->end() )
@@ -1068,7 +1068,7 @@ Value::operator[]( ArrayIndex index ) const
 const Value &
 Value::operator[]( int index ) const
 {
-   JSON_ASSERT( index >= 0 );
+   JSONCPP_ASSERT( index >= 0 );
    return (*this)[ ArrayIndex(index) ];
 }
 
@@ -1084,10 +1084,10 @@ Value &
 Value::resolveReference( const char *key, 
                          bool isStatic )
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == objectValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == objectValue );
    if ( type_ == nullValue )
       *this = Value( objectValue );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    CZString actualKey( key, isStatic ? CZString::noDuplication 
                                      : CZString::duplicateOnCopy );
    ObjectValues::iterator it = value_.map_->lower_bound( actualKey );
@@ -1124,10 +1124,10 @@ Value::isValidIndex( ArrayIndex index ) const
 const Value &
 Value::operator[]( const char *key ) const
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == objectValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == objectValue );
    if ( type_ == nullValue )
       return null;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    CZString actualKey( key, CZString::noDuplication );
    ObjectValues::const_iterator it = value_.map_->find( actualKey );
    if ( it == value_.map_->end() )
@@ -1160,7 +1160,7 @@ Value::operator[]( const StaticString &key )
 }
 
 
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 Value &
 Value::operator[]( const CppTL::ConstString &key )
 {
@@ -1202,10 +1202,10 @@ Value::get( const std::string &key,
 Value
 Value::removeMember( const char* key )
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == objectValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == objectValue );
    if ( type_ == nullValue )
       return null;
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    CZString actualKey( key, CZString::noDuplication );
    ObjectValues::iterator it = value_.map_->find( actualKey );
    if ( it == value_.map_->end() )
@@ -1231,7 +1231,7 @@ Value::removeMember( const std::string &key )
    return removeMember( key.c_str() );
 }
 
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 Value 
 Value::get( const CppTL::ConstString &key,
             const Value &defaultValue ) const
@@ -1255,7 +1255,7 @@ Value::isMember( const std::string &key ) const
 }
 
 
-# ifdef JSON_USE_CPPTL
+# ifdef JSONCPP_USE_CPPTL
 bool 
 Value::isMember( const CppTL::ConstString &key ) const
 {
@@ -1266,12 +1266,12 @@ Value::isMember( const CppTL::ConstString &key ) const
 Value::Members 
 Value::getMemberNames() const
 {
-   JSON_ASSERT( type_ == nullValue  ||  type_ == objectValue );
+   JSONCPP_ASSERT( type_ == nullValue  ||  type_ == objectValue );
    if ( type_ == nullValue )
        return Value::Members();
    Members members;
    members.reserve( value_.map_->size() );
-#ifndef JSON_VALUE_USE_INTERNAL_MAP
+#ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
    ObjectValues::const_iterator it = value_.map_->begin();
    ObjectValues::const_iterator itEnd = value_.map_->end();
    for ( ; it != itEnd; ++it )
@@ -1287,7 +1287,7 @@ Value::getMemberNames() const
    return members;
 }
 //
-//# ifdef JSON_USE_CPPTL
+//# ifdef JSONCPP_USE_CPPTL
 //EnumMemberNames
 //Value::enumMemberNames() const
 //{
@@ -1426,7 +1426,7 @@ Value::begin() const
 {
    switch ( type_ )
    {
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
       if ( value_.array_ )
       {
@@ -1461,7 +1461,7 @@ Value::end() const
 {
    switch ( type_ )
    {
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
       if ( value_.array_ )
       {
@@ -1497,7 +1497,7 @@ Value::begin()
 {
    switch ( type_ )
    {
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
       if ( value_.array_ )
       {
@@ -1532,7 +1532,7 @@ Value::end()
 {
    switch ( type_ )
    {
-#ifdef JSON_VALUE_USE_INTERNAL_MAP
+#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
    case arrayValue:
       if ( value_.array_ )
       {

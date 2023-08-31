@@ -44,7 +44,7 @@ ValueMapAllocator::~ValueMapAllocator()
 {
 }
 
-#ifdef JSON_USE_SIMPLE_INTERNAL_ALLOCATOR
+#ifdef JSONCPP_USE_SIMPLE_INTERNAL_ALLOCATOR
 class DefaultValueMapAllocator : public ValueMapAllocator
 {
 public: // overridden from ValueMapAllocator
@@ -435,7 +435,7 @@ ValueInternalMap::unsafeAdd( const char *key,
                              bool isStatic, 
                              HashKey hashedKey )
 {
-   JSON_ASSERT_MESSAGE( bucketsSize_ > 0, "ValueInternalMap::unsafeAdd(): internal logic error." );
+   JSONCPP_ASSERT_MESSAGE( bucketsSize_ > 0, "ValueInternalMap::unsafeAdd(): internal logic error." );
    BucketIndex bucketIndex = hashedKey % bucketsSize_;
    ValueInternalLink *&previousLink = getLastLinkInBucket( bucketIndex );
    ValueInternalLink *link = previousLink;
@@ -531,7 +531,7 @@ void
 ValueInternalMap::incrementBucket( IteratorState &iterator )
 {
    ++iterator.bucketIndex_;
-   JSON_ASSERT_MESSAGE( iterator.bucketIndex_ <= iterator.map_->bucketsSize_,
+   JSONCPP_ASSERT_MESSAGE( iterator.bucketIndex_ <= iterator.map_->bucketsSize_,
       "ValueInternalMap::increment(): attempting to iterate beyond end." );
    if ( iterator.bucketIndex_ == iterator.map_->bucketsSize_ )
       iterator.link_ = 0;
@@ -544,11 +544,11 @@ ValueInternalMap::incrementBucket( IteratorState &iterator )
 void 
 ValueInternalMap::increment( IteratorState &iterator )
 {
-   JSON_ASSERT_MESSAGE( iterator.map_, "Attempting to iterator using invalid iterator." );
+   JSONCPP_ASSERT_MESSAGE( iterator.map_, "Attempting to iterator using invalid iterator." );
    ++iterator.itemIndex_;
    if ( iterator.itemIndex_ == ValueInternalLink::itemPerLink )
    {
-      JSON_ASSERT_MESSAGE( iterator.link_ != 0,
+      JSONCPP_ASSERT_MESSAGE( iterator.link_ != 0,
          "ValueInternalMap::increment(): attempting to iterate beyond end." );
       iterator.link_ = iterator.link_->next_;
       if ( iterator.link_ == 0 )
@@ -566,10 +566,10 @@ ValueInternalMap::decrement( IteratorState &iterator )
 {
    if ( iterator.itemIndex_ == 0 )
    {
-      JSON_ASSERT_MESSAGE( iterator.map_, "Attempting to iterate using invalid iterator." );
+      JSONCPP_ASSERT_MESSAGE( iterator.map_, "Attempting to iterate using invalid iterator." );
       if ( iterator.link_ == &iterator.map_->buckets_[iterator.bucketIndex_] )
       {
-         JSON_ASSERT_MESSAGE( iterator.bucketIndex_ > 0, "Attempting to iterate beyond beginning." );
+         JSONCPP_ASSERT_MESSAGE( iterator.bucketIndex_ > 0, "Attempting to iterate beyond beginning." );
          --(iterator.bucketIndex_);
       }
       iterator.link_ = iterator.link_->previous_;
@@ -581,14 +581,14 @@ ValueInternalMap::decrement( IteratorState &iterator )
 const char *
 ValueInternalMap::key( const IteratorState &iterator )
 {
-   JSON_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
+   JSONCPP_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
    return iterator.link_->keys_[iterator.itemIndex_];
 }
 
 const char *
 ValueInternalMap::key( const IteratorState &iterator, bool &isStatic )
 {
-   JSON_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
+   JSONCPP_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
    isStatic = iterator.link_->items_[iterator.itemIndex_].isMemberNameStatic();
    return iterator.link_->keys_[iterator.itemIndex_];
 }
@@ -597,7 +597,7 @@ ValueInternalMap::key( const IteratorState &iterator, bool &isStatic )
 Value &
 ValueInternalMap::value( const IteratorState &iterator )
 {
-   JSON_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
+   JSONCPP_ASSERT_MESSAGE( iterator.link_, "Attempting to iterate using invalid iterator." );
    return iterator.link_->items_[iterator.itemIndex_];
 }
 

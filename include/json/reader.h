@@ -3,13 +3,13 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSON_READER_H_INCLUDED
-# define CPPTL_JSON_READER_H_INCLUDED
+#ifndef CPPTL_JSONCPP_READER_H_INCLUDED
+# define CPPTL_JSONCPP_READER_H_INCLUDED
 
-#if !defined(JSON_IS_AMALGAMATION)
+#if !defined(JSONCPP_IS_AMALGAMATION)
 # include "features.h"
 # include "value.h"
-#endif // if !defined(JSON_IS_AMALGAMATION)
+#endif // if !defined(JSONCPP_IS_AMALGAMATION)
 # include <deque>
 # include <stack>
 # include <string>
@@ -20,7 +20,7 @@ namespace Json {
    /** \brief Unserialize a <a HREF="http://www.json.org">JSON</a> document into a Value.
     *
     */
-   class JSON_API Reader
+   class JSONCPP_API Reader
    {
    public:
       typedef char Char;
@@ -211,4 +211,4 @@ namespace Json {
 
 } // namespace Json
 
-#endif // CPPTL_JSON_READER_H_INCLUDED
+#endif // CPPTL_JSONCPP_READER_H_INCLUDED
