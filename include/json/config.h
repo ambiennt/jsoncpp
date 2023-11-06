@@ -6,14 +6,6 @@
 #ifndef JSONCPP_CONFIG_H_INCLUDED
 #define JSONCPP_CONFIG_H_INCLUDED
 
-/// If defined, indicates that json library is embedded in CppTL library.
-// # define JSONCPP_IN_CPPTL 1
-
-/// If defined, indicates that json may leverage CppTL library
-// #  define JSONCPP_USE_CPPTL 1
-/// If defined, indicates that cpptl vector based map should be used instead of std::map
-/// as Value container.
-// #  define JSONCPP_USE_CPPTL_SMALLMAP 1
 /// If defined, indicates that Json specific container should be used
 /// (hash table & simple deque container with customizable allocator).
 /// THIS FEATURE IS STILL EXPERIMENTAL! There is know bugs: See #3177332
@@ -37,16 +29,7 @@
 /// Remarks: defining this macro enables the functionality of: JSONCPP_ASSERT_UNREACHABLE, JSONCPP_ASSERT, JSONCPP_FAIL_MESSAGE, and JSONCPP_ASSERT_MESSAGE
 // # define JSONCPP_ENABLE_ASSERTS 1
 
-#ifdef JSONCPP_IN_CPPTL
-#include <cpptl/config.h>
-#ifndef JSONCPP_USE_CPPTL
-#define JSONCPP_USE_CPPTL 1
-#endif
-#endif
-
-#ifdef JSONCPP_IN_CPPTL
-#define JSONCPP_API CPPTL_API
-#elif defined(JSONCPP_DLL_BUILD)
+#if defined(JSONCPP_DLL_BUILD)
 #define JSONCPP_API __declspec(dllexport)
 #elif defined(JSONCPP_DLL)
 #define JSONCPP_API __declspec(dllimport)

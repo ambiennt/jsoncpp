@@ -9,9 +9,9 @@
 #if !defined(JSONCPP_IS_AMALGAMATION)
 #include "value.h"
 #endif // if !defined(JSONCPP_IS_AMALGAMATION)
-#include <iostream>
-#include <string>
 #include <vector>
+#include <string>
+#include <iostream>
 
 namespace Json {
 

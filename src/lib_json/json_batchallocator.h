@@ -6,8 +6,8 @@
 #ifndef JSONCPP_BATCHALLOCATOR_H_INCLUDED
 #define JSONCPP_BATCHALLOCATOR_H_INCLUDED
 
-#include <assert.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION
 

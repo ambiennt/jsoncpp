@@ -70,9 +70,6 @@ namespace Json {
 
     ValueIteratorBase::difference_type ValueIteratorBase::computeDistance(const SelfType& other) const {
 #ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
-#ifdef JSONCPP_USE_CPPTL_SMALLMAP
-        return current_ - other.current_;
-#else
         // Iterator for null value are initialized using the default
         // constructor, which initialize current_ to the default
         // std::map::iterator. As begin() and end() are two instance
@@ -91,7 +88,6 @@ namespace Json {
             ++myDistance;
         }
         return myDistance;
-#endif
 #else
         if (isArray_)
             return ValueInternalArray::distance(iterator_.array_, other.iterator_.array_);

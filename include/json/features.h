@@ -3,8 +3,8 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSONCPP_FEATURES_H_INCLUDED
-#define CPPTL_JSONCPP_FEATURES_H_INCLUDED
+#ifndef JSONCPP_FEATURES_H_INCLUDED
+#define JSONCPP_FEATURES_H_INCLUDED
 
 #if !defined(JSONCPP_IS_AMALGAMATION)
 #include "forwards.h"
@@ -45,4 +45,4 @@ namespace Json {
 
 } // namespace Json
 
-#endif // CPPTL_JSONCPP_FEATURES_H_INCLUDED
+#endif // JSONCPP_FEATURES_H_INCLUDED

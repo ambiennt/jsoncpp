@@ -3,23 +3,15 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSONCPP_H_INCLUDED
-#define CPPTL_JSONCPP_H_INCLUDED
+#ifndef JSONCPP_H_INCLUDED
+#define JSONCPP_H_INCLUDED
 
 #if !defined(JSONCPP_IS_AMALGAMATION)
 #include "forwards.h"
 #endif // if !defined(JSONCPP_IS_AMALGAMATION)
 #include <string>
 #include <vector>
-
-#ifndef JSONCPP_USE_CPPTL_SMALLMAP
 #include <map>
-#else
-#include <cpptl/smallmap.h>
-#endif
-#ifdef JSONCPP_USE_CPPTL
-#include <cpptl/forwards.h>
-#endif
 
 #ifdef JSONCPP_ENABLE_ASSERTS
 #define JSONCPP_ASSERT_UNREACHABLE assert(false)
@@ -58,11 +50,6 @@ namespace Json {
         commentAfter,           ///< a comment on the line after a value (only make sense for root value)
         numberOfCommentPlacement
     };
-
-    // # ifdef JSONCPP_USE_CPPTL
-    //    typedef CppTL::AnyEnumerator<const char *> EnumMemberNames;
-    //    typedef CppTL::AnyEnumerator<const Value &> EnumValues;
-    // # endif
 
     /** \brief Lightweight wrapper to tag static string.
      *
@@ -191,11 +178,7 @@ namespace Json {
         };
 
     public:
-#ifndef JSONCPP_USE_CPPTL_SMALLMAP
         typedef std::map<CZString, Value> ObjectValues;
-#else
-        typedef CppTL::SmallMap<CZString, Value> ObjectValues;
-#endif // ifndef JSONCPP_USE_CPPTL_SMALLMAP
 #endif // ifndef JSONCPP_VALUE_USE_INTERNAL_MAP
 #endif // ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION
 
@@ -237,9 +220,6 @@ namespace Json {
          */
         Value(const StaticString& value);
         Value(const std::string& value);
-#ifdef JSONCPP_USE_CPPTL
-        Value(const CppTL::ConstString& value);
-#endif
         Value(bool value);
         Value(const Value& other);
         ~Value();
@@ -264,9 +244,6 @@ namespace Json {
 
         const char* asCString() const;
         std::string asString(const std::string& defaultValue = "") const;
-#ifdef JSONCPP_USE_CPPTL
-        CppTL::ConstString asConstString() const;
-#endif
         Int asInt(Value::Int defaultValue = 0) const;
         UInt asUInt(Value::UInt defaultValue = 0) const;
         Int64 asInt64(Value::Int64 defaultValue = 0) const;
@@ -366,20 +343,10 @@ namespace Json {
          * \endcode
          */
         Value& operator[](const StaticString& key);
-#ifdef JSONCPP_USE_CPPTL
-        /// Access an object value by name, create a null member if it does not exist.
-        Value& operator[](const CppTL::ConstString& key);
-        /// Access an object value by name, returns null if there is no member with that name.
-        const Value& operator[](const CppTL::ConstString& key) const;
-#endif
         /// Return the member named key if it exist, defaultValue otherwise.
         Value get(const char* key, const Value& defaultValue) const;
         /// Return the member named key if it exist, defaultValue otherwise.
         Value get(const std::string& key, const Value& defaultValue) const;
-#ifdef JSONCPP_USE_CPPTL
-        /// Return the member named key if it exist, defaultValue otherwise.
-        Value get(const CppTL::ConstString& key, const Value& defaultValue) const;
-#endif
         /// \brief Remove and return the named member.
         ///
         /// Do nothing if it did not exist.
@@ -394,10 +361,6 @@ namespace Json {
         bool isMember(const char* key) const;
         /// Return true if the object has a member named key.
         bool isMember(const std::string& key) const;
-#ifdef JSONCPP_USE_CPPTL
-        /// Return true if the object has a member named key.
-        bool isMember(const CppTL::ConstString& key) const;
-#endif
 
         /// \brief Return a list of the member names.
         ///
@@ -405,11 +368,6 @@ namespace Json {
         /// \pre type() is objectValue or nullValue
         /// \post if type() was nullValue, it remains nullValue
         Members getMemberNames() const;
-
-        // # ifdef JSONCPP_USE_CPPTL
-        //       EnumMemberNames enumMemberNames() const;
-        //       EnumValues enumValues() const;
-        // # endif
 
         /// Comments must be //... or /* ... */
         void setComment(const char* comment, CommentPlacement placement);
@@ -1030,4 +988,4 @@ namespace Json {
 
 } // namespace Json
 
-#endif // CPPTL_JSONCPP_H_INCLUDED
+#endif // JSONCPP_H_INCLUDED

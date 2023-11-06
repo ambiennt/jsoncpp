@@ -10,16 +10,13 @@
 #include "json_batchallocator.h"
 #endif // #ifndef JSONCPP_USE_SIMPLE_INTERNAL_ALLOCATOR
 #endif // if !defined(JSONCPP_IS_AMALGAMATION)
-#include <cassert>
-#include <cstring>
 #include <iostream>
-#include <stdexcept>
 #include <utility>
-#ifdef JSONCPP_USE_CPPTL
-#include <cpptl/conststring.h>
-#endif
-#include <cmath>   // std::nextafter
+#include <stdexcept>
+#include <cstring>
+#include <cassert>
 #include <cstddef> // size_t
+#include <cmath>   // std::nextafter
 
 namespace Json {
 
@@ -290,18 +287,6 @@ namespace Json {
         value_.string_ = const_cast<char*>(value.c_str());
     }
 
-#ifdef JSONCPP_USE_CPPTL
-    Value::Value(const CppTL::ConstString& value)
-        : type_(stringValue), allocated_(true)
-#ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
-          ,
-          itemIsUsed_(0)
-#endif
-    {
-        value_.string_ = duplicateStringValue(value, value.length());
-    }
-#endif
-
     Value::Value(bool value)
         : type_(booleanValue)
 #ifdef JSONCPP_VALUE_USE_INTERNAL_MAP
@@ -528,12 +513,6 @@ namespace Json {
         }
         return defaultValue; // unreachable
     }
-
-#ifdef JSONCPP_USE_CPPTL
-    CppTL::ConstString Value::asConstString() const {
-        return CppTL::ConstString(asString().c_str());
-    }
-#endif
 
     Value::Int Value::asInt(Value::Int defaultValue) const {
         switch (type_) {
@@ -961,16 +940,6 @@ namespace Json {
         return resolveReference(key, true);
     }
 
-#ifdef JSONCPP_USE_CPPTL
-    Value& Value::operator[](const CppTL::ConstString& key) {
-        return (*this)[key.c_str()];
-    }
-
-    const Value& Value::operator[](const CppTL::ConstString& key) const {
-        return (*this)[key.c_str()];
-    }
-#endif
-
     Value& Value::append(const Value& value) {
         return (*this)[size()] = value;
     }
@@ -1012,12 +981,6 @@ namespace Json {
         return removeMember(key.c_str());
     }
 
-#ifdef JSONCPP_USE_CPPTL
-    Value Value::get(const CppTL::ConstString& key, const Value& defaultValue) const {
-        return get(key.c_str(), defaultValue);
-    }
-#endif
-
     bool Value::isMember(const char* key) const {
         const Value* value = &((*this)[key]);
         return value != &null;
@@ -1026,12 +989,6 @@ namespace Json {
     bool Value::isMember(const std::string& key) const {
         return isMember(key.c_str());
     }
-
-#ifdef JSONCPP_USE_CPPTL
-    bool Value::isMember(const CppTL::ConstString& key) const {
-        return isMember(key.c_str());
-    }
-#endif
 
     Value::Members Value::getMemberNames() const {
         JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
@@ -1054,31 +1011,6 @@ namespace Json {
 #endif
         return members;
     }
-    //
-    // # ifdef JSONCPP_USE_CPPTL
-    // EnumMemberNames
-    // Value::enumMemberNames() const
-    //{
-    //   if ( type_ == objectValue )
-    //   {
-    //      return CppTL::Enum::any(  CppTL::Enum::transform(
-    //         CppTL::Enum::keys( *(value_.map_), CppTL::Type<const CZString &>() ),
-    //         MemberNamesTransform() ) );
-    //   }
-    //   return EnumMemberNames();
-    //}
-    //
-    //
-    // EnumValues
-    // Value::enumValues() const
-    //{
-    //   if ( type_ == objectValue  ||  type_ == arrayValue )
-    //      return CppTL::Enum::anyValues( *(value_.map_),
-    //                                     CppTL::Type<const Value &>() );
-    //   return EnumValues();
-    //}
-    //
-    // # endif
 
     bool Value::isNull() const {
         return type_ == nullValue;

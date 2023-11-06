@@ -6,10 +6,10 @@
 #ifndef JSONCPP_JSON_H_INCLUDED
 #define JSONCPP_JSON_H_INCLUDED
 
-#include "autolink.h"
-#include "features.h"
-#include "reader.h"
+#include "config.h"
 #include "value.h"
+#include "reader.h"
 #include "writer.h"
+#include "features.h"
 
 #endif // JSONCPP_JSON_H_INCLUDED

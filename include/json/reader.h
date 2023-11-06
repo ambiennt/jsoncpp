@@ -3,17 +3,17 @@
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-#ifndef CPPTL_JSONCPP_READER_H_INCLUDED
-#define CPPTL_JSONCPP_READER_H_INCLUDED
+#ifndef JSONCPP_READER_H_INCLUDED
+#define JSONCPP_READER_H_INCLUDED
 
 #if !defined(JSONCPP_IS_AMALGAMATION)
 #include "features.h"
 #include "value.h"
 #endif // if !defined(JSONCPP_IS_AMALGAMATION)
 #include <deque>
-#include <iostream>
 #include <stack>
 #include <string>
+#include <iostream>
 
 namespace Json {
 
@@ -186,4 +186,4 @@ namespace Json {
 
 } // namespace Json
 
-#endif // CPPTL_JSONCPP_READER_H_INCLUDED
+#endif // JSONCPP_READER_H_INCLUDED
