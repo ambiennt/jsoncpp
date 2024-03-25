@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <limits>
 
 #ifdef JSONCPP_ENABLE_ASSERTS
 #define JSONCPP_ASSERT_UNREACHABLE assert(false)
@@ -130,25 +131,25 @@ namespace Json {
 
         static const Value null;
         /// Minimum signed integer value that can be stored in a Json::Value.
-        static const LargestInt minLargestInt;
+        static constexpr inline auto minLargestInt = std::numeric_limits<LargestInt>::min();
         /// Maximum signed integer value that can be stored in a Json::Value.
-        static const LargestInt maxLargestInt;
+        static constexpr inline auto maxLargestInt = std::numeric_limits<LargestInt>::max();
         /// Maximum unsigned integer value that can be stored in a Json::Value.
-        static const LargestUInt maxLargestUInt;
+        static constexpr inline auto maxLargestUInt = std::numeric_limits<LargestUInt>::max();
 
         /// Minimum signed int value that can be stored in a Json::Value.
-        static const Int minInt;
+        static constexpr inline auto minInt = std::numeric_limits<Int>::min();
         /// Maximum signed int value that can be stored in a Json::Value.
-        static const Int maxInt;
+        static constexpr inline auto maxInt = std::numeric_limits<Int>::max();
         /// Maximum unsigned int value that can be stored in a Json::Value.
-        static const UInt maxUInt;
+        static constexpr inline auto maxUInt = std::numeric_limits<UInt>::max();
 
         /// Minimum signed 64 bits int value that can be stored in a Json::Value.
-        static const Int64 minInt64;
+        static constexpr inline auto minInt64 = std::numeric_limits<Int64>::min();
         /// Maximum signed 64 bits int value that can be stored in a Json::Value.
-        static const Int64 maxInt64;
+        static constexpr inline auto maxInt64 = std::numeric_limits<Int64>::max();
         /// Maximum unsigned 64 bits int value that can be stored in a Json::Value.
-        static const UInt64 maxUInt64;
+        static constexpr inline auto maxUInt64 = std::numeric_limits<UInt64>::max();
 
     private:
 #ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION

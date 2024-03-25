@@ -20,19 +20,8 @@
 
 namespace Json {
 
-    const Value Value::null;
-    const Int Value::minInt = Int(~(UInt(-1) / 2));
-    const Int Value::maxInt = Int(UInt(-1) / 2);
-    const UInt Value::maxUInt = UInt(-1);
-    const Int64 Value::minInt64 = Int64(~(UInt64(-1) / 2));
-    const Int64 Value::maxInt64 = Int64(UInt64(-1) / 2);
-    const UInt64 Value::maxUInt64 = UInt64(-1);
-    const LargestInt Value::minLargestInt = LargestInt(~(LargestUInt(-1) / 2));
-    const LargestInt Value::maxLargestInt = LargestInt(LargestUInt(-1) / 2);
-    const LargestUInt Value::maxLargestUInt = LargestUInt(-1);
-
     /// Unknown size marker
-    static const unsigned int unknown = (unsigned)-1;
+    static constexpr auto unknown = std::numeric_limits<unsigned int>::max();
 
     /** Duplicates the specified string value.
      * @param value Pointer to the string to duplicate. Must be zero-terminated if
