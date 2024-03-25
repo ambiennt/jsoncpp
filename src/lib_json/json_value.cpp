@@ -46,8 +46,10 @@ namespace Json {
             length = (unsigned int)strlen(value);
         char* newString = static_cast<char*>(malloc(length + 1));
         JSONCPP_ASSERT_MESSAGE(newString != 0, "Failed to allocate string value buffer");
-        memcpy(newString, value, length);
-        newString[length] = 0;
+        [[likely]] if (newString) {
+            memcpy(newString, value, length);
+            newString[length] = 0;
+        }
         return newString;
     }
 
@@ -73,15 +75,15 @@ namespace Json {
 
 namespace Json {
 
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// class Value::CZString
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-// //////////////////////////////////////////////////////////////////
-    // Notes: index_ indicates if the string was allocated when
-    // a string is stored.
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // class Value::CZString
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+        // Notes: index_ indicates if the string was allocated when
+        // a string is stored.
 
     Value::CZString::CZString(ArrayIndex index) : cstr_(0), index_(index) {}
 
@@ -90,7 +92,7 @@ namespace Json {
 
     Value::CZString::CZString(const CZString& other)
         : cstr_(other.index_ != noDuplication && other.cstr_ != 0 ? duplicateStringValue(other.cstr_) : other.cstr_),
-          index_(other.cstr_ ? (other.index_ == noDuplication ? noDuplication : duplicate) : other.index_) {}
+        index_(other.cstr_ ? (other.index_ == noDuplication ? noDuplication : duplicate) : other.index_) {}
 
     Value::CZString::~CZString() {
         if (cstr_ && index_ == duplicate)
@@ -145,141 +147,122 @@ namespace Json {
      * This optimization is used in ValueInternalMap fast allocator.
      */
     Value::Value(ValueType type)
-        : type_(type), allocated_(0)
+        : value_{}, type_(type), allocated_(0)
     {
         switch (type) {
-            case nullValue:
-                break;
-            case intValue:
-            case uintValue:
-                value_.int_ = 0;
-                break;
-            case realValue:
-                value_.real_ = 0.0;
-                break;
-            case stringValue:
-                value_.string_ = 0;
-                break;
-            case arrayValue:
-            case objectValue:
-                value_.map_ = new ObjectValues();
-                break;
-            case booleanValue:
-                value_.bool_ = false;
-                break;
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            break;
+        case intValue:
+        case uintValue:
+            value_.int_ = 0;
+            break;
+        case realValue:
+            value_.real_ = 0.0;
+            break;
+        case stringValue:
+            value_.string_ = 0;
+            break;
+        case arrayValue:
+        case objectValue:
+            value_.map_ = new ObjectValues();
+            break;
+        case booleanValue:
+            value_.bool_ = false;
+            break;
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
     }
 
 #if defined(JSONCPP_HAS_INT64)
     Value::Value(UInt value)
-        : type_(uintValue)
-    {
-        value_.uint_ = value;
-    }
+        : value_{ .uint_ = value }, type_(uintValue)
+    {}
 
     Value::Value(Int value)
-        : type_(intValue)
-    {
-        value_.int_ = value;
-    }
+        : value_{ .int_ = value }, type_(intValue)
+    {}
 
 #endif // if defined(JSONCPP_HAS_INT64)
 
     Value::Value(Int64 value)
-        : type_(intValue)
-    {
-        value_.int_ = value;
-    }
+        : value_{ .int_ = value }, type_(intValue)
+    {}
 
     Value::Value(UInt64 value)
-        : type_(uintValue)
-    {
-        value_.uint_ = value;
-    }
+        : value_{ .uint_ = value }, type_(uintValue)
+    {}
 
     Value::Value(double value)
-        : type_(realValue)
-    {
-        value_.real_ = value;
-    }
+        : value_{ .real_ = value }, type_(realValue)
+    {}
 
     Value::Value(const char* value)
-        : type_(stringValue), allocated_(true)
-    {
-        value_.string_ = duplicateStringValue(value);
-    }
+        : value_{ .string_ = duplicateStringValue(value) }, type_(stringValue), allocated_(true)
+    {}
 
     Value::Value(const char* beginValue, const char* endValue)
-        : type_(stringValue), allocated_(true)
-    {
-        value_.string_ = duplicateStringValue(beginValue, (unsigned int)(endValue - beginValue));
-    }
+        : value_{ .string_ = duplicateStringValue(beginValue, (unsigned int)(endValue - beginValue)) }, type_(stringValue), allocated_(true)
+    {}
 
     Value::Value(const std::string& value)
-        : type_(stringValue), allocated_(true)
-    {
-        value_.string_ = duplicateStringValue(value.c_str(), (unsigned int)value.length());
-    }
+        : value_{ .string_ = duplicateStringValue(value.c_str(), (unsigned int)value.length()) }, type_(stringValue), allocated_(true)
+    {}
 
     Value::Value(const StaticString& value)
-        : type_(stringValue), allocated_(false)
-    {
-        value_.string_ = const_cast<char*>(value.c_str());
-    }
+        : value_{ .string_ = const_cast<char*>(value.c_str()) }, type_(stringValue), allocated_(false)
+    {}
 
     Value::Value(bool value)
-        : type_(booleanValue)
-    {
-        value_.bool_ = value;
-    }
+        : value_{ .bool_ = value }, type_(booleanValue)
+    {}
 
     Value::Value(const Value& other)
-        : type_(other.type_)
+        : value_{}, type_(other.type_)
     {
         switch (type_) {
-            case nullValue:
-            case intValue:
-            case uintValue:
-            case realValue:
-            case booleanValue:
-                value_ = other.value_;
-                break;
-            case stringValue:
-                if (other.value_.string_) {
-                    value_.string_ = duplicateStringValue(other.value_.string_);
-                    allocated_ = true;
-                } else
-                    value_.string_ = 0;
-                break;
-            case arrayValue:
-            case objectValue:
-                value_.map_ = new ObjectValues(*other.value_.map_);
-                break;
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+        case intValue:
+        case uintValue:
+        case realValue:
+        case booleanValue:
+            value_ = other.value_;
+            break;
+        case stringValue:
+            if (other.value_.string_) {
+                value_.string_ = duplicateStringValue(other.value_.string_);
+                allocated_ = true;
+            }
+            else
+                value_.string_ = 0;
+            break;
+        case arrayValue:
+        case objectValue:
+            value_.map_ = new ObjectValues(*other.value_.map_);
+            break;
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
     }
 
     Value::~Value() {
         switch (type_) {
-            case nullValue:
-            case intValue:
-            case uintValue:
-            case realValue:
-            case booleanValue:
-                break;
-            case stringValue:
-                if (allocated_)
-                    releaseStringValue(value_.string_);
-                break;
-            case arrayValue:
-            case objectValue:
-                delete value_.map_;
-                break;
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+        case intValue:
+        case uintValue:
+        case realValue:
+        case booleanValue:
+            break;
+        case stringValue:
+            if (allocated_)
+                releaseStringValue(value_.string_);
+            break;
+        case arrayValue:
+        case objectValue:
+            delete value_.map_;
+            break;
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
     }
 
@@ -316,28 +299,28 @@ namespace Json {
         if (typeDelta)
             return typeDelta < 0 ? true : false;
         switch (type_) {
-            case nullValue:
-                return false;
-            case intValue:
-                return value_.int_ < other.value_.int_;
-            case uintValue:
-                return value_.uint_ < other.value_.uint_;
-            case realValue:
-                return value_.real_ < other.value_.real_;
-            case booleanValue:
-                return value_.bool_ < other.value_.bool_;
-            case stringValue:
-                return (value_.string_ == 0 && other.value_.string_) ||
-                       (other.value_.string_ && value_.string_ && strcmp(value_.string_, other.value_.string_) < 0);
-            case arrayValue:
-            case objectValue: {
-                int delta = int(value_.map_->size() - other.value_.map_->size());
-                if (delta)
-                    return delta < 0;
-                return (*value_.map_) < (*other.value_.map_);
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return false;
+        case intValue:
+            return value_.int_ < other.value_.int_;
+        case uintValue:
+            return value_.uint_ < other.value_.uint_;
+        case realValue:
+            return value_.real_ < other.value_.real_;
+        case booleanValue:
+            return value_.bool_ < other.value_.bool_;
+        case stringValue:
+            return (value_.string_ == 0 && other.value_.string_) ||
+                (other.value_.string_ && value_.string_ && strcmp(value_.string_, other.value_.string_) < 0);
+        case arrayValue:
+        case objectValue: {
+            int delta = int(value_.map_->size() - other.value_.map_->size());
+            if (delta)
+                return delta < 0;
+            return (*value_.map_) < (*other.value_.map_);
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return false; // unreachable
     }
@@ -363,24 +346,24 @@ namespace Json {
         if (type_ != temp)
             return false;
         switch (type_) {
-            case nullValue:
-                return true;
-            case intValue:
-                return value_.int_ == other.value_.int_;
-            case uintValue:
-                return value_.uint_ == other.value_.uint_;
-            case realValue:
-                return value_.real_ == other.value_.real_;
-            case booleanValue:
-                return value_.bool_ == other.value_.bool_;
-            case stringValue:
-                return (value_.string_ == other.value_.string_) ||
-                       (other.value_.string_ && value_.string_ && strcmp(value_.string_, other.value_.string_) == 0);
-            case arrayValue:
-            case objectValue:
-                return value_.map_->size() == other.value_.map_->size() && (*value_.map_) == (*other.value_.map_);
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return true;
+        case intValue:
+            return value_.int_ == other.value_.int_;
+        case uintValue:
+            return value_.uint_ == other.value_.uint_;
+        case realValue:
+            return value_.real_ == other.value_.real_;
+        case booleanValue:
+            return value_.bool_ == other.value_.bool_;
+        case stringValue:
+            return (value_.string_ == other.value_.string_) ||
+                (other.value_.string_ && value_.string_ && strcmp(value_.string_, other.value_.string_) == 0);
+        case arrayValue:
+        case objectValue:
+            return value_.map_->size() == other.value_.map_->size() && (*value_.map_) == (*other.value_.map_);
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return false; // unreachable
     }
@@ -396,77 +379,77 @@ namespace Json {
 
     std::string Value::asString(const std::string& defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case stringValue:
-                return value_.string_ ? value_.string_ : "";
-            case booleanValue:
-                return value_.bool_ ? "true" : "false";
-            case intValue:
-            case uintValue:
-            case realValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to string");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case stringValue:
+            return value_.string_ ? value_.string_ : "";
+        case booleanValue:
+            return value_.bool_ ? "true" : "false";
+        case intValue:
+        case uintValue:
+        case realValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to string");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable
     }
 
     Value::Int Value::asInt(Value::Int defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                JSONCPP_ASSERT_MESSAGE(value_.int_ >= minInt && value_.int_ <= maxInt, "unsigned integer out of signed int range");
-                return Int(value_.int_);
-            case uintValue:
-                JSONCPP_ASSERT_MESSAGE(value_.uint_ <= UInt(maxInt), "unsigned integer out of signed int range");
-                return Int(value_.uint_);
-            case realValue:
-                JSONCPP_ASSERT_MESSAGE(value_.real_ >= minInt && value_.real_ <= maxInt, "Real out of signed integer range");
-                return Int(value_.real_);
-            case booleanValue:
-                return value_.bool_ ? 1 : 0;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to int");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            JSONCPP_ASSERT_MESSAGE(value_.int_ >= minInt && value_.int_ <= maxInt, "unsigned integer out of signed int range");
+            return Int(value_.int_);
+        case uintValue:
+            JSONCPP_ASSERT_MESSAGE(value_.uint_ <= UInt(maxInt), "unsigned integer out of signed int range");
+            return Int(value_.uint_);
+        case realValue:
+            JSONCPP_ASSERT_MESSAGE(value_.real_ >= minInt && value_.real_ <= maxInt, "Real out of signed integer range");
+            return Int(value_.real_);
+        case booleanValue:
+            return value_.bool_ ? 1 : 0;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to int");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
 
     Value::UInt Value::asUInt(Value::UInt defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                JSONCPP_ASSERT_MESSAGE(value_.int_ >= 0, "Negative integer can not be converted to unsigned integer");
-                JSONCPP_ASSERT_MESSAGE(value_.int_ <= maxUInt, "signed integer out of UInt range");
-                return UInt(value_.int_);
-            case uintValue:
-                JSONCPP_ASSERT_MESSAGE(value_.uint_ <= maxUInt, "unsigned integer out of UInt range");
-                return UInt(value_.uint_);
-            case realValue:
-                JSONCPP_ASSERT_MESSAGE(value_.real_ >= 0 && value_.real_ <= maxUInt, "Real out of unsigned integer range");
-                return UInt(value_.real_);
-            case booleanValue:
-                return value_.bool_ ? 1 : 0;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to uint");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            JSONCPP_ASSERT_MESSAGE(value_.int_ >= 0, "Negative integer can not be converted to unsigned integer");
+            JSONCPP_ASSERT_MESSAGE(value_.int_ <= maxUInt, "signed integer out of UInt range");
+            return UInt(value_.int_);
+        case uintValue:
+            JSONCPP_ASSERT_MESSAGE(value_.uint_ <= maxUInt, "unsigned integer out of UInt range");
+            return UInt(value_.uint_);
+        case realValue:
+            JSONCPP_ASSERT_MESSAGE(value_.real_ >= 0 && value_.real_ <= maxUInt, "Real out of unsigned integer range");
+            return UInt(value_.real_);
+        case booleanValue:
+            return value_.bool_ ? 1 : 0;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to uint");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
@@ -475,55 +458,55 @@ namespace Json {
 
     Value::Int64 Value::asInt64(Value::Int64 defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                return value_.int_;
-            case uintValue:
-                JSONCPP_ASSERT_MESSAGE(value_.uint_ <= UInt64(maxInt64), "unsigned integer out of Int64 range");
-                return value_.uint_;
-            case realValue:
-                JSONCPP_ASSERT_MESSAGE(
-                    value_.real_ >= std::nextafter(static_cast<double>(minInt64), 0.0) && value_.real_ <= std::nextafter(static_cast<double>(maxInt64), 0.0),
-                    "Real out of Int64 range"
-                );
-                return Int(value_.real_);
-            case booleanValue:
-                return value_.bool_ ? 1 : 0;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to Int64");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            return value_.int_;
+        case uintValue:
+            JSONCPP_ASSERT_MESSAGE(value_.uint_ <= UInt64(maxInt64), "unsigned integer out of Int64 range");
+            return value_.uint_;
+        case realValue:
+            JSONCPP_ASSERT_MESSAGE(
+                value_.real_ >= std::nextafter(static_cast<double>(minInt64), 0.0) && value_.real_ <= std::nextafter(static_cast<double>(maxInt64), 0.0),
+                "Real out of Int64 range"
+            );
+            return Int(value_.real_);
+        case booleanValue:
+            return value_.bool_ ? 1 : 0;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to Int64");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
 
     Value::UInt64 Value::asUInt64(Value::UInt64 defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                JSONCPP_ASSERT_MESSAGE(value_.int_ >= 0, "Negative integer can not be converted to UInt64");
-                return value_.int_;
-            case uintValue:
-                return value_.uint_;
-            case realValue:
-                JSONCPP_ASSERT_MESSAGE(value_.real_ >= 0 && value_.real_ <= std::nextafter(static_cast<double>(maxUInt64), 0.0), "Real out of UInt64 range");
-                return UInt(value_.real_);
-            case booleanValue:
-                return value_.bool_ ? 1 : 0;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to UInt64");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            JSONCPP_ASSERT_MESSAGE(value_.int_ >= 0, "Negative integer can not be converted to UInt64");
+            return value_.int_;
+        case uintValue:
+            return value_.uint_;
+        case realValue:
+            JSONCPP_ASSERT_MESSAGE(value_.real_ >= 0 && value_.real_ <= std::nextafter(static_cast<double>(maxUInt64), 0.0), "Real out of UInt64 range");
+            return UInt(value_.real_);
+        case booleanValue:
+            return value_.bool_ ? 1 : 0;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to UInt64");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
@@ -547,107 +530,107 @@ namespace Json {
 
     double Value::asDouble(double defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                return static_cast<double>(value_.int_);
-            case uintValue:
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            return static_cast<double>(value_.int_);
+        case uintValue:
 #if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-                return static_cast<double>(value_.uint_);
+            return static_cast<double>(value_.uint_);
 #else  // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-                return static_cast<double>(Int(value_.uint_ / 2)) * 2 + Int(value_.uint_ & 1);
+            return static_cast<double>(Int(value_.uint_ / 2)) * 2 + Int(value_.uint_ & 1);
 #endif // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-            case realValue:
-                return value_.real_;
-            case booleanValue:
-                return value_.bool_ ? 1.0 : 0.0;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to double");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case realValue:
+            return value_.real_;
+        case booleanValue:
+            return value_.bool_ ? 1.0 : 0.0;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to double");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
 
     float Value::asFloat(float defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-                return static_cast<float>(value_.int_);
-            case uintValue:
+        case nullValue:
+            return defaultValue;
+        case intValue:
+            return static_cast<float>(value_.int_);
+        case uintValue:
 #if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-                return static_cast<float>(value_.uint_);
+            return static_cast<float>(value_.uint_);
 #else  // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-                return static_cast<float>(Int(value_.uint_ / 2)) * 2 + Int(value_.uint_ & 1);
+            return static_cast<float>(Int(value_.uint_ / 2)) * 2 + Int(value_.uint_ & 1);
 #endif // if !defined(JSONCPP_USE_INT64_DOUBLE_CONVERSION)
-            case realValue:
-                return static_cast<float>(value_.real_);
-            case booleanValue:
-                return value_.bool_ ? 1.0f : 0.0f;
-            case stringValue:
-            case arrayValue:
-            case objectValue: {
-                JSONCPP_FAIL_MESSAGE("Type is not convertible to float");
-                break;
-            }
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case realValue:
+            return static_cast<float>(value_.real_);
+        case booleanValue:
+            return value_.bool_ ? 1.0f : 0.0f;
+        case stringValue:
+        case arrayValue:
+        case objectValue: {
+            JSONCPP_FAIL_MESSAGE("Type is not convertible to float");
+            break;
+        }
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
 
     bool Value::asBool(bool defaultValue) const {
         switch (type_) {
-            case nullValue:
-                return defaultValue;
-            case intValue:
-            case uintValue:
-                return value_.int_ != 0;
-            case realValue:
-                return value_.real_ != 0.0;
-            case booleanValue:
-                return value_.bool_;
-            case stringValue:
-                return value_.string_ && value_.string_[0] != 0;
-            case arrayValue:
-            case objectValue:
-                return value_.map_->size() != 0;
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return defaultValue;
+        case intValue:
+        case uintValue:
+            return value_.int_ != 0;
+        case realValue:
+            return value_.real_ != 0.0;
+        case booleanValue:
+            return value_.bool_;
+        case stringValue:
+            return value_.string_ && value_.string_[0] != 0;
+        case arrayValue:
+        case objectValue:
+            return value_.map_->size() != 0;
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return defaultValue; // unreachable;
     }
 
     bool Value::isConvertibleTo(ValueType other) const {
         switch (type_) {
-            case nullValue:
-                return true;
-            case intValue:
-                return (other == nullValue && value_.int_ == 0) || other == intValue || (other == uintValue && value_.int_ >= 0) || other == realValue ||
-                       other == stringValue || other == booleanValue;
-            case uintValue:
-                return (other == nullValue && value_.uint_ == 0) || (other == intValue && value_.uint_ <= (unsigned)maxInt) || other == uintValue ||
-                       other == realValue || other == stringValue || other == booleanValue;
-            case realValue:
-                return (other == nullValue && value_.real_ == 0.0) || (other == intValue && value_.real_ >= minInt && value_.real_ <= maxInt) ||
-                       (other == uintValue && value_.real_ >= 0 && value_.real_ <= maxUInt) || other == realValue || other == stringValue ||
-                       other == booleanValue;
-            case booleanValue:
-                return (other == nullValue && value_.bool_ == false) || other == intValue || other == uintValue || other == realValue || other == stringValue ||
-                       other == booleanValue;
-            case stringValue:
-                return other == stringValue || (other == nullValue && (!value_.string_ || value_.string_[0] == 0));
-            case arrayValue:
-                return other == arrayValue || (other == nullValue && value_.map_->size() == 0);
-            case objectValue:
-                return other == objectValue || (other == nullValue && value_.map_->size() == 0);
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+            return true;
+        case intValue:
+            return (other == nullValue && value_.int_ == 0) || other == intValue || (other == uintValue && value_.int_ >= 0) || other == realValue ||
+                other == stringValue || other == booleanValue;
+        case uintValue:
+            return (other == nullValue && value_.uint_ == 0) || (other == intValue && value_.uint_ <= (unsigned)maxInt) || other == uintValue ||
+                other == realValue || other == stringValue || other == booleanValue;
+        case realValue:
+            return (other == nullValue && value_.real_ == 0.0) || (other == intValue && value_.real_ >= minInt && value_.real_ <= maxInt) ||
+                (other == uintValue && value_.real_ >= 0 && value_.real_ <= maxUInt) || other == realValue || other == stringValue ||
+                other == booleanValue;
+        case booleanValue:
+            return (other == nullValue && value_.bool_ == false) || other == intValue || other == uintValue || other == realValue || other == stringValue ||
+                other == booleanValue;
+        case stringValue:
+            return other == stringValue || (other == nullValue && (!value_.string_ || value_.string_[0] == 0));
+        case arrayValue:
+            return other == arrayValue || (other == nullValue && value_.map_->size() == 0);
+        case objectValue:
+            return other == objectValue || (other == nullValue && value_.map_->size() == 0);
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return false; // unreachable;
     }
@@ -655,24 +638,24 @@ namespace Json {
     /// Number of values in array or object
     ArrayIndex Value::size() const {
         switch (type_) {
-            case nullValue:
-            case intValue:
-            case uintValue:
-            case realValue:
-            case booleanValue:
-            case stringValue:
-                return 0;
-            case arrayValue: // size of the array is highest index + 1
-                if (!value_.map_->empty()) {
-                    ObjectValues::const_iterator itLast = value_.map_->end();
-                    --itLast;
-                    return (*itLast).first.index() + 1;
-                }
-                return 0;
-            case objectValue:
-                return ArrayIndex(value_.map_->size());
-            default:
-                JSONCPP_ASSERT_UNREACHABLE;
+        case nullValue:
+        case intValue:
+        case uintValue:
+        case realValue:
+        case booleanValue:
+        case stringValue:
+            return 0;
+        case arrayValue: // size of the array is highest index + 1
+            if (!value_.map_->empty()) {
+                ObjectValues::const_iterator itLast = value_.map_->end();
+                --itLast;
+                return (*itLast).first.index() + 1;
+            }
+            return 0;
+        case objectValue:
+            return ArrayIndex(value_.map_->size());
+        default:
+            JSONCPP_ASSERT_UNREACHABLE;
         }
         return 0; // unreachable;
     }
@@ -692,12 +675,12 @@ namespace Json {
         JSONCPP_ASSERT(type_ == nullValue || type_ == arrayValue || type_ == objectValue);
 
         switch (type_) {
-            case arrayValue:
-            case objectValue:
-                value_.map_->clear();
-                break;
-            default:
-                break;
+        case arrayValue:
+        case objectValue:
+            value_.map_->clear();
+            break;
+        default:
+            break;
         }
     }
 
@@ -917,52 +900,52 @@ namespace Json {
 
     Value::const_iterator Value::begin() const {
         switch (type_) {
-            case arrayValue:
-            case objectValue:
-                if (value_.map_)
-                    return const_iterator(value_.map_->begin());
-                break;
-            default:
-                break;
+        case arrayValue:
+        case objectValue:
+            if (value_.map_)
+                return const_iterator(value_.map_->begin());
+            break;
+        default:
+            break;
         }
         return const_iterator();
     }
 
     Value::const_iterator Value::end() const {
         switch (type_) {
-            case arrayValue:
-            case objectValue:
-                if (value_.map_)
-                    return const_iterator(value_.map_->end());
-                break;
-            default:
-                break;
+        case arrayValue:
+        case objectValue:
+            if (value_.map_)
+                return const_iterator(value_.map_->end());
+            break;
+        default:
+            break;
         }
         return const_iterator();
     }
 
     Value::iterator Value::begin() {
         switch (type_) {
-            case arrayValue:
-            case objectValue:
-                if (value_.map_)
-                    return iterator(value_.map_->begin());
-                break;
-            default:
-                break;
+        case arrayValue:
+        case objectValue:
+            if (value_.map_)
+                return iterator(value_.map_->begin());
+            break;
+        default:
+            break;
         }
         return iterator();
     }
 
     Value::iterator Value::end() {
         switch (type_) {
-            case arrayValue:
-            case objectValue:
-                if (value_.map_)
-                    return iterator(value_.map_->end());
-                break;
-            default:
-                break;
+        case arrayValue:
+        case objectValue:
+            if (value_.map_)
+                return iterator(value_.map_->end());
+            break;
+        default:
+            break;
         }
         return iterator();
     }
@@ -970,13 +953,13 @@ namespace Json {
     // class PathArgument
     // //////////////////////////////////////////////////////////////////
 
-    PathArgument::PathArgument() : kind_(kindNone) {}
+    PathArgument::PathArgument() : key_{}, index_{ 0 }, kind_{ kindNone } {}
 
-    PathArgument::PathArgument(ArrayIndex index) : index_(index), kind_(kindIndex) {}
+    PathArgument::PathArgument(ArrayIndex index) : key_{}, index_{ index }, kind_{ kindIndex } {}
 
-    PathArgument::PathArgument(const char* key) : key_(key), kind_(kindKey) {}
+    PathArgument::PathArgument(const char* key) : key_{ key }, index_{ 0 }, kind_{ kindKey } {}
 
-    PathArgument::PathArgument(const std::string& key) : key_(key.c_str()), kind_(kindKey) {}
+    PathArgument::PathArgument(const std::string& key) : key_{ key.c_str() }, index_{ 0 }, kind_{ kindKey } {}
 
     // class Path
     // //////////////////////////////////////////////////////////////////

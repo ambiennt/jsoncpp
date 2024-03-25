@@ -89,8 +89,8 @@ namespace Json {
         };
 
         // disabled copy constructor and assignement operator.
-        BatchAllocator(const BatchAllocator&);
-        void operator=(const BatchAllocator&);
+        BatchAllocator(const BatchAllocator&) = delete;
+        void operator=(const BatchAllocator&) = delete;
 
         static BatchInfo* allocateBatch(unsigned int objectsPerPage) {
             const unsigned int mallocSize =

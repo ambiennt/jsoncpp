@@ -17,8 +17,8 @@
 #define JSONCPP_ASSERT_UNREACHABLE assert(false)
 #define JSONCPP_ASSERT(condition) assert(condition); // @todo <= change this into an exception throw
 #define JSONCPP_FAIL_MESSAGE(message) throw std::runtime_error(message);
-#define JSONCPP_ASSERT_MESSAGE(condition, message)                                                                                                             \
-    if (!(condition))                                                                                                                                          \
+#define JSONCPP_ASSERT_MESSAGE(condition, message) \
+    if (!(condition))                              \
     JSONCPP_FAIL_MESSAGE(message)
 #else
 #define JSONCPP_ASSERT_UNREACHABLE break

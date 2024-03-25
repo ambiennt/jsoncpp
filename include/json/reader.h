@@ -14,6 +14,8 @@
 #include <stack>
 #include <string>
 #include <iostream>
+#include <concepts>
+#include <utility>
 
 namespace Json {
 
@@ -25,15 +27,10 @@ namespace Json {
         typedef char Char;
         typedef const Char* Location;
 
-        /** \brief Constructs a Reader allowing all features
-         * for parsing.
-         */
-        Reader();
-
         /** \brief Constructs a Reader allowing the specified feature set
          * for parsing.
          */
-        Reader(const Features& features);
+        Reader(const Features& features = Features::all());
 
         /** \brief Read a Value from a <a HREF="http://www.json.org">JSON</a> document.
          * \param document UTF-8 encoded string containing the document to read.
@@ -104,6 +101,9 @@ namespace Json {
             TokenType type_;
             Location start_;
             Location end_;
+
+            Token() : type_{}, start_{ nullptr }, end_{ nullptr } {}
+            Token(TokenType type, Location start, Location end) : type_{ type }, start_{ start }, end_{ end } {}
         };
 
         class ErrorInfo {
@@ -111,6 +111,10 @@ namespace Json {
             Token token_;
             std::string message_;
             Location extra_;
+
+            ErrorInfo() : token_{}, message_{}, extra_{ nullptr } {}
+            template <std::convertible_to<decltype(ErrorInfo::message_)> Message>
+            ErrorInfo(Token token, Message&& message, Location extra) : token_{ token }, message_{ std::forward<Message>(message) }, extra_{extra} {}
         };
 
         typedef std::deque<ErrorInfo> Errors;
@@ -136,7 +140,6 @@ namespace Json {
         bool addError(const std::string& message, Token& token, Location extra = 0);
         bool recoverFromError(TokenType skipUntilToken);
         bool addErrorAndRecover(const std::string& message, Token& token, TokenType skipUntilToken);
-        void skipUntilSpace();
         Value& currentValue();
         Char getNextChar();
         void getLocationLineAndColumn(Location location, int& line, int& column) const;

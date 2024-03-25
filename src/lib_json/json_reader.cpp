@@ -58,9 +58,9 @@ namespace Json {
     // Class Reader
     // //////////////////////////////////////////////////////////////////
 
-    Reader::Reader() : features_(Features::all()) {}
-
-    Reader::Reader(const Features& features) : features_(features) {}
+    Reader::Reader(const Features& features) :
+        nodes_{}, errors_{}, document_{}, begin_{ nullptr }, end_{ nullptr }, current_{ nullptr }, lastValueEnd_{ nullptr },
+        lastValue_{ nullptr }, commentsBefore_{}, features_{ features }, collectComments_{ false } {}
 
     bool Reader::parse(const std::string& document, Value& root, bool collectComments) {
         document_ = document;
@@ -585,11 +585,7 @@ namespace Json {
     }
 
     bool Reader::addError(const std::string& message, Token& token, Location extra) {
-        ErrorInfo info;
-        info.token_ = token;
-        info.message_ = message;
-        info.extra_ = extra;
-        errors_.push_back(info);
+        errors_.emplace_back(token, message, extra);
         return false;
     }
 

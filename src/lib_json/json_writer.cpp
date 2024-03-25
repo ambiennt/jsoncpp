@@ -231,7 +231,7 @@ namespace Json {
     // Class StyledWriter
     // //////////////////////////////////////////////////////////////////
 
-    StyledWriter::StyledWriter() : rightMargin_(74), indentSize_(3) {}
+    StyledWriter::StyledWriter() : childValues_{}, document_{}, indentString_{}, rightMargin_{ 74 }, indentSize_{ 3 }, addChildValues_{ false } {}
 
     std::string StyledWriter::write(const Value& root) {
         document_ = "";
@@ -439,7 +439,8 @@ namespace Json {
     // Class StyledStreamWriter
     // //////////////////////////////////////////////////////////////////
 
-    StyledStreamWriter::StyledStreamWriter(std::string indentation) : document_(NULL), rightMargin_(74), indentation_(indentation) {}
+    StyledStreamWriter::StyledStreamWriter(std::string indentation) :
+        childValues_{}, document_{ nullptr }, indentString_{}, rightMargin_{ 74 }, indentation_{ indentation }, addChildValues_{ false } {}
 
     void StyledStreamWriter::write(std::ostream& out, const Value& root) {
         document_ = &out;
@@ -449,7 +450,7 @@ namespace Json {
         writeValue(root);
         writeCommentAfterValueOnSameLine(root);
         *document_ << "\n";
-        document_ = NULL; // Forget the stream, for safety.
+        document_ = nullptr; // Forget the stream, for safety.
     }
 
     void StyledStreamWriter::writeValue(const Value& value) {
