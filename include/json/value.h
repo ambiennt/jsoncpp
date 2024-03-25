@@ -13,6 +13,8 @@
 #include <vector>
 #include <map>
 #include <limits>
+#include <cstdint>
+#include <string_view>
 
 #ifdef JSONCPP_ENABLE_ASSERTS
 #define JSONCPP_ASSERT_UNREACHABLE assert(false)
@@ -34,7 +36,7 @@ namespace Json {
 
     /** \brief Type of the value held by a Value object.
      */
-    enum ValueType {
+    enum ValueType : uint8_t {
         nullValue = 0, ///< 'null' value
         intValue,      ///< signed integer value
         uintValue,     ///< unsigned integer value
@@ -169,6 +171,7 @@ namespace Json {
             bool operator==(const CZString& other) const;
             ArrayIndex index() const;
             const char* c_str() const;
+            size_t length() const;
             bool isStaticString() const;
 
         private:
@@ -177,8 +180,32 @@ namespace Json {
             ArrayIndex index_;
         };
 
+        struct CZStringCompare {
+            using is_transparent = void;
+
+            bool operator()(const CZString& lhs, const CZString& rhs) const {
+                return lhs < rhs;
+            }
+
+            bool operator()(const char* lhs, const CZString& rhs) const {
+                return rhs.c_str() ? strcmp(lhs, rhs.c_str()) < 0 : false;
+            }
+
+            bool operator()(const CZString& lhs, const char* rhs) const {
+                return lhs.c_str() ? strcmp(lhs.c_str(), rhs) < 0 : false;
+            }
+
+            bool operator()(const std::string_view lhs, const CZString& rhs) const {
+                return lhs < std::string_view{ rhs.c_str(), rhs.length() };
+            }
+
+            bool operator()(const CZString& lhs, const std::string_view rhs) const {
+                return std::string_view{ lhs.c_str(), lhs.length() } < rhs;
+            }
+        };
+
     public:
-        typedef std::map<CZString, Value> ObjectValues;
+        typedef std::map<CZString, Value, CZStringCompare> ObjectValues;
 #endif // ifndef JSONCPP_DOC_EXCLUDE_IMPLEMENTATION
 
     public:
@@ -405,8 +432,8 @@ namespace Json {
             char* string_;
             ObjectValues* map_;
         } value_;
-        ValueType type_ : 8;
-        unsigned int allocated_ : 1; // Notes: if declared as bool, bitfield is useless.
+        ValueType type_;
+        bool allocated_; // Notes: if declared as bool, bitfield is useless.
     };
 
     /** \brief Experimental and untested: represents an element of the "path" to access a node.

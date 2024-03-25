@@ -31,8 +31,12 @@ namespace Json {
      * @return Pointer on the duplicate instance of string.
      */
     static inline char* duplicateStringValue(const char* value, unsigned int length = unknown) {
-        if (length == unknown)
+        if (length == unknown) {
             length = (unsigned int)strlen(value);
+        }
+        else if (length == 0) {
+            return nullptr;
+        }
         char* newString = static_cast<char*>(malloc(length + 1));
         JSONCPP_ASSERT_MESSAGE(newString != 0, "Failed to allocate string value buffer");
         [[likely]] if (newString) {
@@ -100,15 +104,23 @@ namespace Json {
     }
 
     bool Value::CZString::operator<(const CZString& other) const {
-        if (cstr_)
+        if (cstr_ == other.cstr_) {
+            return false;
+        }
+        if (cstr_ && other.cstr_) {
             return strcmp(cstr_, other.cstr_) < 0;
-        return index_ < other.index_;
+        }
+        return false;
     }
 
     bool Value::CZString::operator==(const CZString& other) const {
-        if (cstr_)
-            return strcmp(cstr_, other.cstr_) == 0;
-        return index_ == other.index_;
+        if (!cstr_ || !other.cstr_) {
+            return cstr_ == other.cstr_;
+        }
+        if (cstr_ == other.cstr_) {
+            return true;
+        }
+        return strcmp(cstr_, other.cstr_) == 0;
     }
 
     ArrayIndex Value::CZString::index() const {
@@ -117,6 +129,10 @@ namespace Json {
 
     const char* Value::CZString::c_str() const {
         return cstr_;
+    }
+
+    size_t Value::CZString::length() const {
+        return strlen(cstr_);
     }
 
     bool Value::CZString::isStaticString() const {
@@ -136,7 +152,7 @@ namespace Json {
      * This optimization is used in ValueInternalMap fast allocator.
      */
     Value::Value(ValueType type)
-        : value_{}, type_(type), allocated_(0)
+        : value_{}, type_{ type }, allocated_{ false }
     {
         switch (type) {
         case nullValue:
@@ -149,7 +165,7 @@ namespace Json {
             value_.real_ = 0.0;
             break;
         case stringValue:
-            value_.string_ = 0;
+            value_.string_ = nullptr;
             break;
         case arrayValue:
         case objectValue:
@@ -165,49 +181,49 @@ namespace Json {
 
 #if defined(JSONCPP_HAS_INT64)
     Value::Value(UInt value)
-        : value_{ .uint_ = value }, type_(uintValue)
+        : value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false }
     {}
 
     Value::Value(Int value)
-        : value_{ .int_ = value }, type_(intValue)
+        : value_{ .int_ = value }, type_{ intValue }, allocated_{ false }
     {}
 
 #endif // if defined(JSONCPP_HAS_INT64)
 
     Value::Value(Int64 value)
-        : value_{ .int_ = value }, type_(intValue)
+        : value_{ .int_ = value }, type_{ intValue }, allocated_{ false }
     {}
 
     Value::Value(UInt64 value)
-        : value_{ .uint_ = value }, type_(uintValue)
+        : value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false }
     {}
 
     Value::Value(double value)
-        : value_{ .real_ = value }, type_(realValue)
+        : value_{ .real_ = value }, type_{ realValue }, allocated_{ false }
     {}
 
     Value::Value(const char* value)
-        : value_{ .string_ = duplicateStringValue(value) }, type_(stringValue), allocated_(true)
+        : value_{ .string_ = duplicateStringValue(value) }, type_{ stringValue }, allocated_{ true }
     {}
 
     Value::Value(const char* beginValue, const char* endValue)
-        : value_{ .string_ = duplicateStringValue(beginValue, (unsigned int)(endValue - beginValue)) }, type_(stringValue), allocated_(true)
+        : value_{ .string_ = duplicateStringValue(beginValue, (unsigned int)(endValue - beginValue)) }, type_{ stringValue }, allocated_{ true }
     {}
 
     Value::Value(const std::string& value)
-        : value_{ .string_ = duplicateStringValue(value.c_str(), (unsigned int)value.length()) }, type_(stringValue), allocated_(true)
+        : value_{ .string_ = duplicateStringValue(value.c_str(), (unsigned int)value.length()) }, type_{ stringValue }, allocated_{ true }
     {}
 
     Value::Value(const StaticString& value)
-        : value_{ .string_ = const_cast<char*>(value.c_str()) }, type_(stringValue), allocated_(false)
+        : value_{ .string_ = const_cast<char*>(value.c_str()) }, type_{ stringValue }, allocated_{ false }
     {}
 
     Value::Value(bool value)
-        : value_{ .bool_ = value }, type_(booleanValue)
+        : value_{ .bool_ = value }, type_{ booleanValue }, allocated_{ false }
     {}
 
     Value::Value(const Value& other)
-        : value_{}, type_(other.type_)
+        : value_{}, type_{ other.type_ }, allocated_{ false }
     {
         switch (type_) {
         case nullValue:
@@ -223,7 +239,7 @@ namespace Json {
                 allocated_ = true;
             }
             else
-                value_.string_ = 0;
+                value_.string_ = nullptr;
             break;
         case arrayValue:
         case objectValue:
@@ -256,19 +272,16 @@ namespace Json {
     }
 
     Value& Value::operator=(const Value& other) {
-        Value temp(other);
-        swap(temp);
+        if (this != &other) {
+            Value temp{ other };
+            swap(temp);
+        }
         return *this;
     }
 
     void Value::swap(Value& other) {
-        ValueType temp = type_;
-        type_ = other.type_;
-        other.type_ = temp;
+        std::swap(type_, other.type_);
         std::swap(value_, other.value_);
-        int temp2 = allocated_;
-        allocated_ = other.allocated_;
-        other.allocated_ = temp2;
     }
 
     ValueType Value::type() const {
@@ -299,7 +312,7 @@ namespace Json {
         case booleanValue:
             return value_.bool_ < other.value_.bool_;
         case stringValue:
-            return (value_.string_ == 0 && other.value_.string_) ||
+            return (!value_.string_ && other.value_.string_) ||
                 (other.value_.string_ && value_.string_ && strcmp(value_.string_, other.value_.string_) < 0);
         case arrayValue:
         case objectValue: {
@@ -585,10 +598,10 @@ namespace Json {
         case booleanValue:
             return value_.bool_;
         case stringValue:
-            return value_.string_ && value_.string_[0] != 0;
+            return value_.string_ && value_.string_[0] != '\0';
         case arrayValue:
         case objectValue:
-            return value_.map_->size() != 0;
+            return !value_.map_->empty();
         default:
             JSONCPP_ASSERT_UNREACHABLE;
         }
@@ -613,11 +626,11 @@ namespace Json {
             return (other == nullValue && value_.bool_ == false) || other == intValue || other == uintValue || other == realValue || other == stringValue ||
                 other == booleanValue;
         case stringValue:
-            return other == stringValue || (other == nullValue && (!value_.string_ || value_.string_[0] == 0));
+            return other == stringValue || (other == nullValue && (!value_.string_ || value_.string_[0] == '\0'));
         case arrayValue:
-            return other == arrayValue || (other == nullValue && value_.map_->size() == 0);
+            return other == arrayValue || (other == nullValue && value_.map_->empty());
         case objectValue:
-            return other == objectValue || (other == nullValue && value_.map_->size() == 0);
+            return other == objectValue || (other == nullValue && value_.map_->empty());
         default:
             JSONCPP_ASSERT_UNREACHABLE;
         }
@@ -734,14 +747,11 @@ namespace Json {
         if (type_ == nullValue)
             *this = Value(objectValue);
         CZString actualKey(key, isStatic ? CZString::noDuplication : CZString::duplicateOnCopy);
-        ObjectValues::iterator it = value_.map_->lower_bound(actualKey);
-        if (it != value_.map_->end() && (*it).first == actualKey)
-            return (*it).second;
-
-        ObjectValues::value_type defaultValue(actualKey, null);
-        it = value_.map_->insert(it, defaultValue);
-        Value& value = (*it).second;
-        return value;
+        auto it = value_.map_->find(actualKey);
+        if (it != value_.map_->end()) {
+            return it->second;
+        }
+        return value_.map_->emplace(actualKey, null).first->second;
     }
 
     Value Value::get(ArrayIndex index, const Value& defaultValue) const {
@@ -758,10 +768,11 @@ namespace Json {
         if (type_ == nullValue)
             return null;
         CZString actualKey(key, CZString::noDuplication);
-        ObjectValues::const_iterator it = value_.map_->find(actualKey);
-        if (it == value_.map_->end())
-            return null;
-        return (*it).second;
+        auto it = value_.map_->find(actualKey);
+        if (it != value_.map_->end()) {
+            return it->second;
+        }
+        return null;
     }
 
     Value& Value::operator[](const std::string& key) {
@@ -794,12 +805,13 @@ namespace Json {
         if (type_ == nullValue)
             return null;
         CZString actualKey(key, CZString::noDuplication);
-        ObjectValues::iterator it = value_.map_->find(actualKey);
-        if (it == value_.map_->end())
-            return null;
-        Value old(it->second);
-        value_.map_->erase(it);
-        return old;
+        auto it = value_.map_->find(actualKey);
+        if (it != value_.map_->end()) {
+            Value old(it->second);
+            value_.map_->erase(it);
+            return old;
+        }
+        return null;
     }
 
     Value Value::removeMember(const std::string& key) {
@@ -818,13 +830,13 @@ namespace Json {
     Value::Members Value::getMemberNames() const {
         JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
         if (type_ == nullValue)
-            return Value::Members();
+            return {};
         Members members;
         members.reserve(value_.map_->size());
         ObjectValues::const_iterator it = value_.map_->begin();
         ObjectValues::const_iterator itEnd = value_.map_->end();
         for (; it != itEnd; ++it)
-            members.push_back(std::string((*it).first.c_str()));
+            members.emplace_back((*it).first.c_str());
         return members;
     }
 
@@ -897,7 +909,7 @@ namespace Json {
         default:
             break;
         }
-        return const_iterator();
+        return {};
     }
 
     Value::const_iterator Value::end() const {
@@ -910,7 +922,7 @@ namespace Json {
         default:
             break;
         }
-        return const_iterator();
+        return {};
     }
 
     Value::iterator Value::begin() {
@@ -923,7 +935,7 @@ namespace Json {
         default:
             break;
         }
-        return iterator();
+        return {};
     }
 
     Value::iterator Value::end() {
@@ -936,7 +948,7 @@ namespace Json {
         default:
             break;
         }
-        return iterator();
+        return {};
     }
 
     // class PathArgument
