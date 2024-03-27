@@ -20,3 +20,18 @@ target_include_directories(jsoncpp PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
     $<INSTALL_INTERFACE:include>
 )
+
+
+
+set(SOURCES_JSONTESTRUNNER
+        "src/jsontestrunner/main.cpp"
+)
+
+add_executable(jsontestrunner ${SOURCES_JSONTESTRUNNER})
+
+target_link_libraries(jsontestrunner PRIVATE jsoncpp)
+
+target_include_directories(jsontestrunner PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include>
+)
