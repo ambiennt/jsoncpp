@@ -215,12 +215,12 @@ namespace Json {
         case objectValue: {
             document_ += "{";
             bool begin = false;
-            for (const auto& [key, value] : value.items()) {
+            for (const auto& [name, _] : value.items()) {
                 if (std::exchange(begin, true))
                     document_ += ",";
-                document_ += valueToQuotedString(key.c_str());
+                document_ += valueToQuotedString(name.c_str());
                 document_ += yamlCompatiblityEnabled_ ? ": " : ":";
-                writeValue(value.get(key));
+                writeValue(value.get(name));
             }
             document_ += "}";
         } break;
@@ -295,7 +295,7 @@ namespace Json {
     }
 
     void StyledWriter::writeArrayValue(const Value& value) {
-        ArrayIndex size = value.size();
+        auto size = value.size();
         if (size == 0)
             pushValue("[]");
         else {
@@ -339,11 +339,11 @@ namespace Json {
     }
 
     bool StyledWriter::isMultineArray(const Value& value) {
-        int size = value.size();
+        auto size = static_cast<int>(value.size());
         bool isMultiLine = size * 3 >= rightMargin_;
         childValues_.clear();
         for (int index = 0; index < size && !isMultiLine; ++index) {
-            const Value& childValue = value.get(index);
+            const auto& childValue = value.get(index);
             isMultiLine = isMultiLine || ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
         }
         if (!isMultiLine) // check if line length > max line length
@@ -504,7 +504,7 @@ namespace Json {
     }
 
     void StyledStreamWriter::writeArrayValue(const Value& value) {
-        ArrayIndex size = value.size();
+        auto size = value.size();
         if (size == 0)
             pushValue("[]");
         else {
@@ -515,7 +515,7 @@ namespace Json {
                 bool hasChildValue = !childValues_.empty();
                 ArrayIndex index = 0;
                 for (;;) {
-                    const Value& childValue = value.get(index);
+                    const auto& childValue = value.get(index);
                     writeCommentBeforeValue(childValue);
                     if (hasChildValue)
                         writeWithIndent(childValues_[index]);
@@ -536,7 +536,7 @@ namespace Json {
             {
                 assert(childValues_.size() == size);
                 *document_ << "[ ";
-                for (unsigned index = 0; index < size; ++index) {
+                for (ArrayIndex index = 0; index < size; ++index) {
                     if (index > 0)
                         *document_ << ", ";
                     *document_ << childValues_[index];
@@ -547,11 +547,11 @@ namespace Json {
     }
 
     bool StyledStreamWriter::isMultineArray(const Value& value) {
-        int size = value.size();
+        auto size = static_cast<int>(value.size());
         bool isMultiLine = size * 3 >= rightMargin_;
         childValues_.clear();
         for (int index = 0; index < size && !isMultiLine; ++index) {
-            const Value& childValue = value.get(index);
+            const auto& childValue = value.get(index);
             isMultiLine = isMultiLine || ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
         }
         if (!isMultiLine) // check if line length > max line length
