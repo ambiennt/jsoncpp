@@ -749,8 +749,7 @@ namespace Json {
         if (type_ == nullValue)
             return nullptr;
 
-        CZString key(index);
-        const auto it = value_.map_->find(key);
+        const auto it = value_.map_->find(index);
         if (it != value_.map_->end()) {
             return &it->second;
         }
@@ -794,13 +793,11 @@ namespace Json {
         if (type_ == nullValue)
             *this = Value(arrayValue);
 
-        CZString key(index);
-        const auto it = value_.map_->find(key);
-        if (it != value_.map_->end()) {
-            return it->second;
+        auto ret = this->tryGet(index);
+        if (ret) {
+            return *ret;
         }
-        ObjectValues::value_type defaultValue(key, null);
-        return value_.map_->insert(it, std::move(defaultValue))->second;
+        return value_.map_->emplace(index, null).first->second;
     }
 
     Value& Value::operator[](std::string_view key) {
@@ -808,9 +805,9 @@ namespace Json {
         if (type_ == nullValue)
             *this = Value(objectValue);
 
-        const auto it = value_.map_->find(key);
-        if (it != value_.map_->end()) {
-            return it->second;
+        auto ret = this->tryGet(key);
+        if (ret) {
+            return *ret;
         }
         return value_.map_->emplace(key, null).first->second;
     }
@@ -820,11 +817,28 @@ namespace Json {
         if (type_ == nullValue)
             *this = Value(objectValue);
 
-        const auto it = value_.map_->find(key);
-        if (it != value_.map_->end()) {
-            return it->second;
+        auto ret = this->tryGet(key);
+        if (ret) {
+            return *ret;
         }
         return value_.map_->emplace(key, null).first->second;
+    }
+
+    Value& Value::operator[](const StaticString& key) {
+        return resolveReference(key, true);
+    }
+
+    Value& Value::resolveReference(const char* key, bool isStatic) {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
+        if (type_ == nullValue)
+            *this = Value(objectValue);
+
+        CZString actualKey(key, isStatic ? CZString::noDuplication : CZString::duplicateOnCopy);
+        auto ret = this->tryGet(actualKey);
+        if (ret) {
+            return *ret;
+        }
+        return value_.map_->emplace(actualKey, null).first->second;
     }
 
     bool Value::isValidIndex(ArrayIndex index) const {

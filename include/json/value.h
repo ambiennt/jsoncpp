@@ -353,6 +353,8 @@ namespace Json {
 
         Value& operator[](const CZString& key);
 
+        Value& operator[](const StaticString& key);
+
         /// \brief Remove and return the named member.
         ///
         /// Do nothing if it did not exist.
@@ -384,6 +386,8 @@ namespace Json {
         iterator end();
 
     private:
+        Value& resolveReference(const char* key, bool isStatic);
+
         // struct MemberNamesTransform
         //{
         //    typedef const char *result_type;
