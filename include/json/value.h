@@ -238,7 +238,6 @@ namespace Json {
 #endif // if defined(JSONCPP_HAS_INT64)
         Value(double value);
         Value(const char* value);
-        Value(const char* beginValue, const char* endValue);
         /** \brief Constructs a value from a static string.
 
          * Like other value string constructor but do not duplicate the string for
@@ -250,10 +249,15 @@ namespace Json {
          * \endcode
          */
         Value(const StaticString& value);
+        Value(std::string_view value);
         Value(const std::string& value);
         Value(bool value);
         Value(const Value& other);
         Value(Value&& other) noexcept;
+
+        template<size_t N>
+        Value(const char(&str)[N]) : Value{ std::string_view{ str, N - 1 } } {}
+
         ~Value();
 
         Value& operator=(const Value& other);

@@ -80,16 +80,15 @@ namespace Json {
 
     Value::CZString::CZString(ArrayIndex index) : cstr_(nullptr), index_(index) {}
 
-    Value::CZString::CZString(const char* cstr, DuplicationPolicy allocate)
-        : cstr_(allocate == duplicate ? duplicateStringValue(cstr) : cstr), index_(allocate) {}
+    Value::CZString::CZString(const char* cstr, DuplicationPolicy allocate) :
+        cstr_(allocate == duplicate ? duplicateStringValue(cstr) : cstr), index_(allocate) {}
 
-    Value::CZString::CZString(const CZString& other)
-        : cstr_(other.index_ != noDuplication && other.cstr_ ? duplicateStringValue(other.cstr_) : other.cstr_),
+    Value::CZString::CZString(const CZString& other) :
+        cstr_(other.index_ != noDuplication && other.cstr_ ? duplicateStringValue(other.cstr_) : other.cstr_),
         index_(other.cstr_ ? (other.index_ == noDuplication ? noDuplication : duplicate) : other.index_) {}
 
-    // must duplicate, since std::string_view doesn't guarantee a null terminator
-    Value::CZString::CZString(std::string_view str)
-        : cstr_(duplicateStringValue(str.data(), static_cast<unsigned int>(str.length()))), index_(duplicate) {}
+    Value::CZString::CZString(std::string_view str) :
+        cstr_(str.data() ? duplicateStringValue(str.data(), static_cast<unsigned int>(str.length())) : nullptr), index_(str.data() ? duplicate : noDuplication) {}
 
     Value::CZString::~CZString() {
         if (cstr_ && index_ == duplicate)
@@ -186,50 +185,40 @@ namespace Json {
     }
 
 #if defined(JSONCPP_HAS_INT64)
-    Value::Value(UInt value)
-        : value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false }
-    {}
+    Value::Value(UInt value) :
+        value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false } {}
 
-    Value::Value(Int value)
-        : value_{ .int_ = value }, type_{ intValue }, allocated_{ false }
-    {}
+    Value::Value(Int value) :
+        value_{ .int_ = value }, type_{ intValue }, allocated_{ false } {}
 
 #endif // if defined(JSONCPP_HAS_INT64)
 
-    Value::Value(Int64 value)
-        : value_{ .int_ = value }, type_{ intValue }, allocated_{ false }
-    {}
+    Value::Value(Int64 value) :
+        value_{ .int_ = value }, type_{ intValue }, allocated_{ false } {}
 
-    Value::Value(UInt64 value)
-        : value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false }
-    {}
+    Value::Value(UInt64 value) :
+        value_{ .uint_ = value }, type_{ uintValue }, allocated_{ false } {}
 
-    Value::Value(double value)
-        : value_{ .real_ = value }, type_{ realValue }, allocated_{ false }
-    {}
+    Value::Value(double value) :
+        value_{ .real_ = value }, type_{ realValue }, allocated_{ false } {}
 
-    Value::Value(const char* value)
-        : value_{ .string_ = duplicateStringValue(value) }, type_{ stringValue }, allocated_{ true }
-    {}
+    Value::Value(const char* value) :
+        value_{ .string_ = duplicateStringValue(value) }, type_{ stringValue }, allocated_{ true } {}
 
-    Value::Value(const char* beginValue, const char* endValue)
-        : value_{ .string_ = duplicateStringValue(beginValue, (unsigned int)(endValue - beginValue)) }, type_{ stringValue }, allocated_{ true }
-    {}
+    Value::Value(const StaticString& value) :
+        value_{ .string_ = const_cast<char*>(value.c_str()) }, type_{ stringValue }, allocated_{ false } {}
 
-    Value::Value(const std::string& value)
-        : value_{ .string_ = duplicateStringValue(value.c_str(), (unsigned int)value.length()) }, type_{ stringValue }, allocated_{ true }
-    {}
+    Value::Value(std::string_view value) :
+        value_{ .string_ = duplicateStringValue(value.data(), (unsigned int)value.length()) }, type_{ stringValue }, allocated_{ true } {}
 
-    Value::Value(const StaticString& value)
-        : value_{ .string_ = const_cast<char*>(value.c_str()) }, type_{ stringValue }, allocated_{ false }
-    {}
+    Value::Value(const std::string& value) :
+        Value{ std::string_view{ value } } {}
 
-    Value::Value(bool value)
-        : value_{ .bool_ = value }, type_{ booleanValue }, allocated_{ false }
-    {}
+    Value::Value(bool value) :
+        value_{ .bool_ = value }, type_{ booleanValue }, allocated_{ false } {}
 
-    Value::Value(const Value& other)
-        : value_{}, type_{ other.type_ }, allocated_{ false }
+    Value::Value(const Value& other) :
+        value_{}, type_{ other.type_ }, allocated_{ false }
     {
         switch (type_) {
         case nullValue:
