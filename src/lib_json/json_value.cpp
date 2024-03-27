@@ -256,6 +256,12 @@ namespace Json {
         }
     }
 
+    Value::Value(Value&& other) noexcept : Value{} {
+        if (this != &other) {
+            this->swap(other);
+        }
+    }
+
     Value::~Value() {
         switch (type_) {
         case nullValue:
@@ -281,6 +287,13 @@ namespace Json {
         if (this != &other) {
             Value temp{ other };
             swap(temp);
+        }
+        return *this;
+    }
+
+    Value& Value::operator=(Value&& other) noexcept {
+        if (this != &other) {
+            this->swap(other);
         }
         return *this;
     }

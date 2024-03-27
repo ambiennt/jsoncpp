@@ -253,9 +253,12 @@ namespace Json {
         Value(const std::string& value);
         Value(bool value);
         Value(const Value& other);
+        Value(Value&& other) noexcept;
         ~Value();
 
         Value& operator=(const Value& other);
+        Value& operator=(Value&& other) noexcept;
+
         /// Swap values.
         /// \note Currently, comments are intentionally not swapped, for
         /// both logic and efficiency.
