@@ -15,6 +15,8 @@
 #include <limits>
 #include <cstdint>
 #include <string_view>
+#include <concepts>
+#include <utility>
 
 #ifdef JSONCPP_ENABLE_ASSERTS
 #define JSONCPP_ASSERT_UNREACHABLE assert(false)
@@ -165,6 +167,7 @@ namespace Json {
             CZString(ArrayIndex index);
             CZString(const char* cstr, DuplicationPolicy allocate);
             CZString(const CZString& other);
+            explicit CZString(std::string_view str);
             ~CZString();
             CZString& operator=(const CZString& other);
             bool operator<(const CZString& other) const;
@@ -315,33 +318,6 @@ namespace Json {
         /// \post type() is arrayValue
         void resize(ArrayIndex size);
 
-        /// Access an array element (zero based index ).
-        /// If the array contains less than index element, then null value are inserted
-        /// in the array so that its size is index+1.
-        /// (You may need to say 'value[0u]' to get your compiler to distinguish
-        ///  this from the operator[] which takes a string.)
-        Value& operator[](ArrayIndex index);
-
-        /// Access an array element (zero based index ).
-        /// If the array contains less than index element, then null value are inserted
-        /// in the array so that its size is index+1.
-        /// (You may need to say 'value[0u]' to get your compiler to distinguish
-        ///  this from the operator[] which takes a string.)
-        Value& operator[](int index);
-
-        /// Access an array element (zero based index )
-        /// (You may need to say 'value[0u]' to get your compiler to distinguish
-        ///  this from the operator[] which takes a string.)
-        const Value& operator[](ArrayIndex index) const;
-
-        /// Access an array element (zero based index )
-        /// (You may need to say 'value[0u]' to get your compiler to distinguish
-        ///  this from the operator[] which takes a string.)
-        const Value& operator[](int index) const;
-
-        /// If the array contains at least index+1 elements, returns the element value,
-        /// otherwise returns defaultValue.
-        Value get(ArrayIndex index, const Value& defaultValue) const;
         /// Return true if index < size().
         bool isValidIndex(ArrayIndex index) const;
         /// \brief Append value to array at the end.
@@ -349,51 +325,45 @@ namespace Json {
         /// Equivalent to jsonvalue[jsonvalue.size()] = value;
         Value& append(const Value& value);
 
-        /// Access an object value by name, create a null member if it does not exist.
-        Value& operator[](const char* key);
-        /// Access an object value by name, returns null if there is no member with that name.
-        const Value& operator[](const char* key) const;
-        /// Access an object value by name, create a null member if it does not exist.
-        Value& operator[](const std::string& key);
-        /// Access an object value by name, returns null if there is no member with that name.
-        const Value& operator[](const std::string& key) const;
-        /** \brief Access an object value by name, create a null member if it does not exist.
+        Value& get(ArrayIndex index);
+        const Value& get(ArrayIndex index) const;
+        Value& get(std::string_view key);
+        const Value& get(std::string_view key) const;
+        Value& get(const CZString& key);
+        const Value& get(const CZString& key) const;
 
-         * If the object as no entry for that name, then the member name used to store
-         * the new entry is not duplicated.
-         * Example of use:
-         * \code
-         * Json::Value object;
-         * static const StaticString code("code");
-         * object[code] = 1234;
-         * \endcode
-         */
-        Value& operator[](const StaticString& key);
-        /// Return the member named key if it exist, defaultValue otherwise.
-        Value get(const char* key, const Value& defaultValue) const;
-        /// Return the member named key if it exist, defaultValue otherwise.
-        Value get(const std::string& key, const Value& defaultValue) const;
+        Value* tryGet(ArrayIndex index);
+        const Value* tryGet(ArrayIndex index) const;
+        Value* tryGet(std::string_view key);
+        const Value* tryGet(std::string_view key) const;
+        Value* tryGet(const CZString& key);
+        const Value* tryGet(const CZString& key) const;
+
+        /// Access an array element (zero based index ).
+        /// If the array contains less than index element, then null value are inserted
+        /// in the array so that its size is index+1.
+        /// (You may need to say 'value[0u]' to get your compiler to distinguish
+        ///  this from the operator[] which takes a string.)
+        Value& operator[](ArrayIndex index);
+
+        /// Access an object value by name, create a null member if it does not exist.
+        Value& operator[](std::string_view key);
+
+        Value& operator[](const CZString& key);
+
         /// \brief Remove and return the named member.
         ///
         /// Do nothing if it did not exist.
         /// \return the removed Value, or null.
         /// \pre type() is objectValue or nullValue
         /// \post type() is unchanged
-        Value removeMember(const char* key);
-        /// Same as removeMember(const char*)
-        Value removeMember(const std::string& key);
+        Value removeMember(std::string_view key);
 
         /// Return true if the object has a member named key.
-        bool isMember(const char* key) const;
-        /// Return true if the object has a member named key.
-        bool isMember(const std::string& key) const;
+        bool isMember(std::string_view key) const;
+        bool isMember(const CZString& key) const;
 
-        /// \brief Return a list of the member names.
-        ///
-        /// If null, return an empty list.
-        /// \pre type() is objectValue or nullValue
-        /// \post if type() was nullValue, it remains nullValue
-        Members getMemberNames() const;
+        const ObjectValues& items() const;
 
         /// Comments must be //... or /* ... */
         void setComment(const char* comment, CommentPlacement placement);
@@ -410,9 +380,6 @@ namespace Json {
 
         iterator begin();
         iterator end();
-
-    private:
-        Value& resolveReference(const char* key, bool isStatic);
 
     private:
         // struct MemberNamesTransform
@@ -439,15 +406,6 @@ namespace Json {
     /** \brief Experimental and untested: represents an element of the "path" to access a node.
      */
     class PathArgument {
-    public:
-        friend class Path;
-
-        PathArgument();
-        PathArgument(ArrayIndex index);
-        PathArgument(const char* key);
-        PathArgument(const std::string& key);
-
-    private:
         enum Kind {
             kindNone = 0,
             kindIndex,
@@ -456,6 +414,14 @@ namespace Json {
         std::string key_;
         ArrayIndex index_;
         Kind kind_;
+
+    public:
+        friend class Path;
+
+        PathArgument() : key_{}, index_{ 0 }, kind_{ kindNone } {}
+        PathArgument(ArrayIndex index) : key_{}, index_{ index }, kind_{ kindIndex } {}
+        template <std::convertible_to<decltype(PathArgument::key_)> Key>
+        PathArgument(Key&& key) : key_{ std::forward<Key>(key) }, index_{ 0 }, kind_{ kindKey } {}
     };
 
     /** \brief Experimental and untested: represents a "path" to access a node.

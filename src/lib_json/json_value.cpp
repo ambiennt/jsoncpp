@@ -78,14 +78,18 @@ namespace Json {
         // Notes: index_ indicates if the string was allocated when
         // a string is stored.
 
-    Value::CZString::CZString(ArrayIndex index) : cstr_(0), index_(index) {}
+    Value::CZString::CZString(ArrayIndex index) : cstr_(nullptr), index_(index) {}
 
     Value::CZString::CZString(const char* cstr, DuplicationPolicy allocate)
         : cstr_(allocate == duplicate ? duplicateStringValue(cstr) : cstr), index_(allocate) {}
 
     Value::CZString::CZString(const CZString& other)
-        : cstr_(other.index_ != noDuplication && other.cstr_ != 0 ? duplicateStringValue(other.cstr_) : other.cstr_),
+        : cstr_(other.index_ != noDuplication && other.cstr_ ? duplicateStringValue(other.cstr_) : other.cstr_),
         index_(other.cstr_ ? (other.index_ == noDuplication ? noDuplication : duplicate) : other.index_) {}
+
+    // must duplicate, since std::string_view doesn't guarantee a null terminator
+    Value::CZString::CZString(std::string_view str)
+        : cstr_(duplicateStringValue(str.data(), static_cast<unsigned int>(str.length()))), index_(duplicate) {}
 
     Value::CZString::~CZString() {
         if (cstr_ && index_ == duplicate)
@@ -146,6 +150,8 @@ namespace Json {
     // //////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////
     // //////////////////////////////////////////////////////////////////
+
+    const Value Value::null;
 
     /*! \internal Default constructor initialization must be equivalent to:
      * memset( this, 0, sizeof(Value) )
@@ -340,12 +346,7 @@ namespace Json {
     }
 
     bool Value::operator==(const Value& other) const {
-        // if ( type_ != other.type_ )
-        //  GCC 2.95.3 says:
-        //  attempt to take address of bit-field structure member `Json::Value::type_'
-        //  Beats me, but a temp solves the problem.
-        int temp = other.type_;
-        if (type_ != temp)
+        if (type_ != other.type_)
             return false;
         switch (type_) {
         case nullValue:
@@ -703,109 +704,143 @@ namespace Json {
         }
     }
 
+    Value& Value::get(ArrayIndex index) {
+        auto value = this->tryGet(index);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    const Value& Value::get(ArrayIndex index) const {
+        auto value = this->tryGet(index);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    Value& Value::get(std::string_view key) {
+        auto value = this->tryGet(key);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    const Value& Value::get(std::string_view key) const {
+        auto value = this->tryGet(key);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    Value& Value::get(const CZString& key) {
+        auto value = this->tryGet(key);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    const Value& Value::get(const CZString& key) const {
+        auto value = this->tryGet(key);
+        JSONCPP_ASSERT(value != nullptr);
+        return *value;
+    }
+
+    Value* Value::tryGet(ArrayIndex index) {
+        return const_cast<Value*>(std::as_const(*this).tryGet(index));
+    }
+
+    const Value* Value::tryGet(ArrayIndex index) const {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == arrayValue);
+        if (type_ == nullValue)
+            return nullptr;
+
+        CZString key(index);
+        const auto it = value_.map_->find(key);
+        if (it != value_.map_->end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
+
+    Value* Value::tryGet(std::string_view key) {
+        return const_cast<Value*>(std::as_const(*this).tryGet(key));
+    }
+
+    const Value* Value::tryGet(std::string_view key) const {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
+        if (type_ == nullValue)
+            return nullptr;
+
+        const auto it = value_.map_->find(key);
+        if (it != value_.map_->end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
+
+    Value* Value::tryGet(const CZString& key) {
+        return const_cast<Value*>(std::as_const(*this).tryGet(key));
+    }
+
+    const Value* Value::tryGet(const CZString& key) const {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
+        if (type_ == nullValue)
+            return nullptr;
+
+        const auto it = value_.map_->find(key);
+        if (it != value_.map_->end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
+
     Value& Value::operator[](ArrayIndex index) {
         JSONCPP_ASSERT(type_ == nullValue || type_ == arrayValue);
         if (type_ == nullValue)
             *this = Value(arrayValue);
+
         CZString key(index);
-        ObjectValues::iterator it = value_.map_->lower_bound(key);
-        if (it != value_.map_->end() && (*it).first == key)
-            return (*it).second;
-
-        ObjectValues::value_type defaultValue(key, null);
-        it = value_.map_->insert(it, defaultValue);
-        return (*it).second;
-    }
-
-    Value& Value::operator[](int index) {
-        JSONCPP_ASSERT(index >= 0);
-        return (*this)[ArrayIndex(index)];
-    }
-
-    const Value& Value::operator[](ArrayIndex index) const {
-        JSONCPP_ASSERT(type_ == nullValue || type_ == arrayValue);
-        if (type_ == nullValue)
-            return null;
-        CZString key(index);
-        ObjectValues::const_iterator it = value_.map_->find(key);
-        if (it == value_.map_->end())
-            return null;
-        return (*it).second;
-    }
-
-    const Value& Value::operator[](int index) const {
-        JSONCPP_ASSERT(index >= 0);
-        return (*this)[ArrayIndex(index)];
-    }
-
-    Value& Value::operator[](const char* key) {
-        return resolveReference(key, false);
-    }
-
-    Value& Value::resolveReference(const char* key, bool isStatic) {
-        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
-        if (type_ == nullValue)
-            *this = Value(objectValue);
-        CZString actualKey(key, isStatic ? CZString::noDuplication : CZString::duplicateOnCopy);
-        auto it = value_.map_->find(actualKey);
+        const auto it = value_.map_->find(key);
         if (it != value_.map_->end()) {
             return it->second;
         }
-        return value_.map_->emplace(actualKey, null).first->second;
+        ObjectValues::value_type defaultValue(key, null);
+        return value_.map_->insert(it, std::move(defaultValue))->second;
     }
 
-    Value Value::get(ArrayIndex index, const Value& defaultValue) const {
-        const Value* value = &((*this)[index]);
-        return value == &null ? defaultValue : *value;
+    Value& Value::operator[](std::string_view key) {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
+        if (type_ == nullValue)
+            *this = Value(objectValue);
+
+        const auto it = value_.map_->find(key);
+        if (it != value_.map_->end()) {
+            return it->second;
+        }
+        return value_.map_->emplace(key, null).first->second;
+    }
+
+    Value& Value::operator[](const CZString& key) {
+        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
+        if (type_ == nullValue)
+            *this = Value(objectValue);
+
+        const auto it = value_.map_->find(key);
+        if (it != value_.map_->end()) {
+            return it->second;
+        }
+        return value_.map_->emplace(key, null).first->second;
     }
 
     bool Value::isValidIndex(ArrayIndex index) const {
         return index < size();
     }
 
-    const Value& Value::operator[](const char* key) const {
-        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
-        if (type_ == nullValue)
-            return null;
-        CZString actualKey(key, CZString::noDuplication);
-        auto it = value_.map_->find(actualKey);
-        if (it != value_.map_->end()) {
-            return it->second;
-        }
-        return null;
-    }
-
-    Value& Value::operator[](const std::string& key) {
-        return (*this)[key.c_str()];
-    }
-
-    const Value& Value::operator[](const std::string& key) const {
-        return (*this)[key.c_str()];
-    }
-
-    Value& Value::operator[](const StaticString& key) {
-        return resolveReference(key, true);
-    }
-
     Value& Value::append(const Value& value) {
         return (*this)[size()] = value;
     }
 
-    Value Value::get(const char* key, const Value& defaultValue) const {
-        const Value* value = &((*this)[key]);
-        return value == &null ? defaultValue : *value;
-    }
-
-    Value Value::get(const std::string& key, const Value& defaultValue) const {
-        return get(key.c_str(), defaultValue);
-    }
-
-    Value Value::removeMember(const char* key) {
+    Value Value::removeMember(std::string_view key) {
         JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
         if (type_ == nullValue)
             return null;
-        CZString actualKey(key, CZString::noDuplication);
-        auto it = value_.map_->find(actualKey);
+
+        const auto it = value_.map_->find(key);
         if (it != value_.map_->end()) {
             Value old(it->second);
             value_.map_->erase(it);
@@ -814,30 +849,17 @@ namespace Json {
         return null;
     }
 
-    Value Value::removeMember(const std::string& key) {
-        return removeMember(key.c_str());
+    bool Value::isMember(std::string_view key) const {
+        return this->tryGet(key) != nullptr;
     }
 
-    bool Value::isMember(const char* key) const {
-        const Value* value = &((*this)[key]);
-        return value != &null;
+    bool Value::isMember(const CZString& key) const {
+        return this->tryGet(key) != nullptr;
     }
 
-    bool Value::isMember(const std::string& key) const {
-        return isMember(key.c_str());
-    }
-
-    Value::Members Value::getMemberNames() const {
-        JSONCPP_ASSERT(type_ == nullValue || type_ == objectValue);
-        if (type_ == nullValue)
-            return {};
-        Members members;
-        members.reserve(value_.map_->size());
-        ObjectValues::const_iterator it = value_.map_->begin();
-        ObjectValues::const_iterator itEnd = value_.map_->end();
-        for (; it != itEnd; ++it)
-            members.emplace_back((*it).first.c_str());
-        return members;
+    const Value::ObjectValues& Value::items() const {
+        JSONCPP_ASSERT(type_ == objectValue);
+        return *value_.map_;
     }
 
     bool Value::isNull() const {
@@ -951,16 +973,6 @@ namespace Json {
         return {};
     }
 
-    // class PathArgument
-    // //////////////////////////////////////////////////////////////////
-
-    PathArgument::PathArgument() : key_{}, index_{ 0 }, kind_{ kindNone } {}
-
-    PathArgument::PathArgument(ArrayIndex index) : key_{}, index_{ index }, kind_{ kindIndex } {}
-
-    PathArgument::PathArgument(const char* key) : key_{ key }, index_{ 0 }, kind_{ kindKey } {}
-
-    PathArgument::PathArgument(const std::string& key) : key_{ key.c_str() }, index_{ 0 }, kind_{ kindKey } {}
 
     // class Path
     // //////////////////////////////////////////////////////////////////
@@ -990,7 +1002,7 @@ namespace Json {
                     ArrayIndex index = 0;
                     for (; current != end && *current >= '0' && *current <= '9'; ++current)
                         index = index * 10 + ArrayIndex(*current - '0');
-                    args_.push_back(index);
+                    args_.emplace_back(index);
                 }
                 if (current == end || *current++ != ']')
                     invalidPath(path, int(current - path.c_str()));
@@ -1024,18 +1036,25 @@ namespace Json {
 
     const Value& Path::resolve(const Value& root) const {
         const Value* node = &root;
-        for (Args::const_iterator it = args_.begin(); it != args_.end(); ++it) {
-            const PathArgument& arg = *it;
+        for (const auto& arg : args_) {
             if (arg.kind_ == PathArgument::kindIndex) {
                 if (!node->isArray() || node->isValidIndex(arg.index_)) {
                     // Error: unable to resolve path (array value expected at position...
                 }
-                node = &((*node)[arg.index_]);
+
+                {
+                    auto temp = node->tryGet(arg.index_);
+                    node = (temp ? temp : &Value::null);
+                }
             } else if (arg.kind_ == PathArgument::kindKey) {
                 if (!node->isObject()) {
                     // Error: unable to resolve path (object value expected at position...)
                 }
-                node = &((*node)[arg.key_]);
+
+                {
+                    auto temp = node->tryGet(arg.key_);
+                    node = (temp ? temp : &Value::null);
+                }
                 if (node == &Value::null) {
                     // Error: unable to resolve path (object has no member named '' at position...)
                 }
@@ -1046,16 +1065,23 @@ namespace Json {
 
     Value Path::resolve(const Value& root, const Value& defaultValue) const {
         const Value* node = &root;
-        for (Args::const_iterator it = args_.begin(); it != args_.end(); ++it) {
-            const PathArgument& arg = *it;
+        for (const auto& arg : args_) {
             if (arg.kind_ == PathArgument::kindIndex) {
                 if (!node->isArray() || node->isValidIndex(arg.index_))
                     return defaultValue;
-                node = &((*node)[arg.index_]);
+
+                {
+                    auto temp = node->tryGet(arg.index_);
+                    node = (temp ? temp : &Value::null);
+                }
             } else if (arg.kind_ == PathArgument::kindKey) {
                 if (!node->isObject())
                     return defaultValue;
-                node = &((*node)[arg.key_]);
+                
+                {
+                    auto temp = node->tryGet(arg.key_);
+                    node = (temp ? temp : &Value::null);
+                }
                 if (node == &Value::null)
                     return defaultValue;
             }
@@ -1065,8 +1091,7 @@ namespace Json {
 
     Value& Path::make(Value& root) const {
         Value* node = &root;
-        for (Args::const_iterator it = args_.begin(); it != args_.end(); ++it) {
-            const PathArgument& arg = *it;
+        for (const auto& arg : args_) {
             if (arg.kind_ == PathArgument::kindIndex) {
                 if (!node->isArray()) {
                     // Error: node is not an array at position ...

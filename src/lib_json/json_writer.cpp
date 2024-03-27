@@ -184,47 +184,46 @@ namespace Json {
 
     void FastWriter::writeValue(const Value& value) {
         switch (value.type()) {
-            case nullValue:
-                document_ += "null";
-                break;
-            case intValue:
-                document_ += valueToString(value.asLargestInt());
-                break;
-            case uintValue:
-                document_ += valueToString(value.asLargestUInt());
-                break;
-            case realValue:
-                document_ += valueToString(value.asDouble());
-                break;
-            case stringValue:
-                document_ += valueToQuotedString(value.asCString());
-                break;
-            case booleanValue:
-                document_ += valueToString(value.asBool());
-                break;
-            case arrayValue: {
-                document_ += "[";
-                int size = value.size();
-                for (int index = 0; index < size; ++index) {
-                    if (index > 0)
-                        document_ += ",";
-                    writeValue(value[index]);
-                }
-                document_ += "]";
-            } break;
-            case objectValue: {
-                Value::Members members(value.getMemberNames());
-                document_ += "{";
-                for (Value::Members::iterator it = members.begin(); it != members.end(); ++it) {
-                    const std::string& name = *it;
-                    if (it != members.begin())
-                        document_ += ",";
-                    document_ += valueToQuotedString(name.c_str());
-                    document_ += yamlCompatiblityEnabled_ ? ": " : ":";
-                    writeValue(value[name]);
-                }
-                document_ += "}";
-            } break;
+        case nullValue:
+            document_ += "null";
+            break;
+        case intValue:
+            document_ += valueToString(value.asLargestInt());
+            break;
+        case uintValue:
+            document_ += valueToString(value.asLargestUInt());
+            break;
+        case realValue:
+            document_ += valueToString(value.asDouble());
+            break;
+        case stringValue:
+            document_ += valueToQuotedString(value.asCString());
+            break;
+        case booleanValue:
+            document_ += valueToString(value.asBool());
+            break;
+        case arrayValue: {
+            document_ += "[";
+            auto size = value.size();
+            for (ArrayIndex index = 0; index < size; ++index) {
+                if (index > 0)
+                    document_ += ",";
+                writeValue(value.get(index));
+            }
+            document_ += "]";
+        } break;
+        case objectValue: {
+            document_ += "{";
+            bool begin = false;
+            for (const auto& [key, value] : value.items()) {
+                if (std::exchange(begin, true))
+                    document_ += ",";
+                document_ += valueToQuotedString(key.c_str());
+                document_ += yamlCompatiblityEnabled_ ? ": " : ":";
+                writeValue(value.get(key));
+            }
+            document_ += "}";
+        } break;
         }
     }
 
@@ -246,58 +245,57 @@ namespace Json {
 
     void StyledWriter::writeValue(const Value& value) {
         switch (value.type()) {
-            case nullValue:
-                pushValue("null");
-                break;
-            case intValue:
-                pushValue(valueToString(value.asLargestInt()));
-                break;
-            case uintValue:
-                pushValue(valueToString(value.asLargestUInt()));
-                break;
-            case realValue:
-                pushValue(valueToString(value.asDouble()));
-                break;
-            case stringValue:
-                pushValue(valueToQuotedString(value.asCString()));
-                break;
-            case booleanValue:
-                pushValue(valueToString(value.asBool()));
-                break;
-            case arrayValue:
-                writeArrayValue(value);
-                break;
-            case objectValue: {
-                Value::Members members(value.getMemberNames());
-                if (members.empty())
-                    pushValue("{}");
-                else {
-                    writeWithIndent("{");
-                    indent();
-                    Value::Members::iterator it = members.begin();
-                    for (;;) {
-                        const std::string& name = *it;
-                        const Value& childValue = value[name];
-                        writeCommentBeforeValue(childValue);
-                        writeWithIndent(valueToQuotedString(name.c_str()));
-                        document_ += " : ";
-                        writeValue(childValue);
-                        if (++it == members.end()) {
-                            writeCommentAfterValueOnSameLine(childValue);
-                            break;
-                        }
-                        document_ += ",";
+        case nullValue:
+            pushValue("null");
+            break;
+        case intValue:
+            pushValue(valueToString(value.asLargestInt()));
+            break;
+        case uintValue:
+            pushValue(valueToString(value.asLargestUInt()));
+            break;
+        case realValue:
+            pushValue(valueToString(value.asDouble()));
+            break;
+        case stringValue:
+            pushValue(valueToQuotedString(value.asCString()));
+            break;
+        case booleanValue:
+            pushValue(valueToString(value.asBool()));
+            break;
+        case arrayValue:
+            writeArrayValue(value);
+            break;
+        case objectValue: {
+            auto& items = value.items();
+            if (items.empty())
+                pushValue("{}");
+            else {
+                writeWithIndent("{");
+                indent();
+                auto it = items.begin();
+                for (;;) {
+                    const auto& [name, childValue] = *it;
+                    writeCommentBeforeValue(childValue);
+                    writeWithIndent(valueToQuotedString(name.c_str()));
+                    document_ += " : ";
+                    writeValue(childValue);
+                    if (++it == items.end()) {
                         writeCommentAfterValueOnSameLine(childValue);
+                        break;
                     }
-                    unindent();
-                    writeWithIndent("}");
+                    document_ += ",";
+                    writeCommentAfterValueOnSameLine(childValue);
                 }
-            } break;
+                unindent();
+                writeWithIndent("}");
+            }
+        } break;
         }
     }
 
     void StyledWriter::writeArrayValue(const Value& value) {
-        unsigned size = value.size();
+        ArrayIndex size = value.size();
         if (size == 0)
             pushValue("[]");
         else {
@@ -306,9 +304,9 @@ namespace Json {
                 writeWithIndent("[");
                 indent();
                 bool hasChildValue = !childValues_.empty();
-                unsigned index = 0;
+                ArrayIndex index = 0;
                 for (;;) {
-                    const Value& childValue = value[index];
+                    const auto& childValue = value.get(index);
                     writeCommentBeforeValue(childValue);
                     if (hasChildValue)
                         writeWithIndent(childValues_[index]);
@@ -325,7 +323,8 @@ namespace Json {
                 }
                 unindent();
                 writeWithIndent("]");
-            } else // output on a single line
+            }
+            else // output on a single line
             {
                 assert(childValues_.size() == size);
                 document_ += "[ ";
@@ -344,7 +343,7 @@ namespace Json {
         bool isMultiLine = size * 3 >= rightMargin_;
         childValues_.clear();
         for (int index = 0; index < size && !isMultiLine; ++index) {
-            const Value& childValue = value[index];
+            const Value& childValue = value.get(index);
             isMultiLine = isMultiLine || ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
         }
         if (!isMultiLine) // check if line length > max line length
@@ -353,9 +352,9 @@ namespace Json {
             addChildValues_ = true;
             int lineLength = 4 + (size - 1) * 2; // '[ ' + ', '*n + ' ]'
             for (int index = 0; index < size && !isMultiLine; ++index) {
-                writeValue(value[index]);
+                writeValue(value.get(index));
                 lineLength += int(childValues_[index].length());
-                isMultiLine = isMultiLine && hasCommentForValue(value[index]);
+                isMultiLine = isMultiLine && hasCommentForValue(value.get(index));
             }
             addChildValues_ = false;
             isMultiLine = isMultiLine || lineLength >= rightMargin_;
@@ -455,58 +454,57 @@ namespace Json {
 
     void StyledStreamWriter::writeValue(const Value& value) {
         switch (value.type()) {
-            case nullValue:
-                pushValue("null");
-                break;
-            case intValue:
-                pushValue(valueToString(value.asLargestInt()));
-                break;
-            case uintValue:
-                pushValue(valueToString(value.asLargestUInt()));
-                break;
-            case realValue:
-                pushValue(valueToString(value.asDouble()));
-                break;
-            case stringValue:
-                pushValue(valueToQuotedString(value.asCString()));
-                break;
-            case booleanValue:
-                pushValue(valueToString(value.asBool()));
-                break;
-            case arrayValue:
-                writeArrayValue(value);
-                break;
-            case objectValue: {
-                Value::Members members(value.getMemberNames());
-                if (members.empty())
-                    pushValue("{}");
-                else {
-                    writeWithIndent("{");
-                    indent();
-                    Value::Members::iterator it = members.begin();
-                    for (;;) {
-                        const std::string& name = *it;
-                        const Value& childValue = value[name];
-                        writeCommentBeforeValue(childValue);
-                        writeWithIndent(valueToQuotedString(name.c_str()));
-                        *document_ << " : ";
-                        writeValue(childValue);
-                        if (++it == members.end()) {
-                            writeCommentAfterValueOnSameLine(childValue);
-                            break;
-                        }
-                        *document_ << ",";
+        case nullValue:
+            pushValue("null");
+            break;
+        case intValue:
+            pushValue(valueToString(value.asLargestInt()));
+            break;
+        case uintValue:
+            pushValue(valueToString(value.asLargestUInt()));
+            break;
+        case realValue:
+            pushValue(valueToString(value.asDouble()));
+            break;
+        case stringValue:
+            pushValue(valueToQuotedString(value.asCString()));
+            break;
+        case booleanValue:
+            pushValue(valueToString(value.asBool()));
+            break;
+        case arrayValue:
+            writeArrayValue(value);
+            break;
+        case objectValue: {
+            auto& items = value.items();
+            if (items.empty())
+                pushValue("{}");
+            else {
+                writeWithIndent("{");
+                indent();
+                auto it = items.begin();
+                for (;;) {
+                    const auto& [name, childValue] = *it;
+                    writeCommentBeforeValue(childValue);
+                    writeWithIndent(valueToQuotedString(name.c_str()));
+                    *document_ << " : ";
+                    writeValue(childValue);
+                    if (++it == items.end()) {
                         writeCommentAfterValueOnSameLine(childValue);
+                        break;
                     }
-                    unindent();
-                    writeWithIndent("}");
+                    *document_ << ",";
+                    writeCommentAfterValueOnSameLine(childValue);
                 }
-            } break;
+                unindent();
+                writeWithIndent("}");
+            }
+        } break;
         }
     }
 
     void StyledStreamWriter::writeArrayValue(const Value& value) {
-        unsigned size = value.size();
+        ArrayIndex size = value.size();
         if (size == 0)
             pushValue("[]");
         else {
@@ -515,9 +513,9 @@ namespace Json {
                 writeWithIndent("[");
                 indent();
                 bool hasChildValue = !childValues_.empty();
-                unsigned index = 0;
+                ArrayIndex index = 0;
                 for (;;) {
-                    const Value& childValue = value[index];
+                    const Value& childValue = value.get(index);
                     writeCommentBeforeValue(childValue);
                     if (hasChildValue)
                         writeWithIndent(childValues_[index]);
@@ -553,7 +551,7 @@ namespace Json {
         bool isMultiLine = size * 3 >= rightMargin_;
         childValues_.clear();
         for (int index = 0; index < size && !isMultiLine; ++index) {
-            const Value& childValue = value[index];
+            const Value& childValue = value.get(index);
             isMultiLine = isMultiLine || ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
         }
         if (!isMultiLine) // check if line length > max line length
@@ -562,9 +560,9 @@ namespace Json {
             addChildValues_ = true;
             int lineLength = 4 + (size - 1) * 2; // '[ ' + ', '*n + ' ]'
             for (int index = 0; index < size && !isMultiLine; ++index) {
-                writeValue(value[index]);
+                writeValue(value.get(index));
                 lineLength += int(childValues_[index].length());
-                isMultiLine = isMultiLine && hasCommentForValue(value[index]);
+                isMultiLine = isMultiLine && hasCommentForValue(value.get(index));
             }
             addChildValues_ = false;
             isMultiLine = isMultiLine || lineLength >= rightMargin_;

@@ -23,6 +23,9 @@ readInputTestFile( const char *path )
       return std::string("");
    fseek( file, 0, SEEK_END );
    long size = ftell( file );
+   if (size == -1) {
+       return {};
+   }
    fseek( file, 0, SEEK_SET );
    std::string text;
    char *buffer = new char[size+1];
@@ -73,15 +76,9 @@ printValueTree( FILE *fout, Json::Value &value, const std::string &path = "." )
    case Json::objectValue:
       {
          fprintf( fout, "%s={}\n", path.c_str() );
-         Json::Value::Members members( value.getMemberNames() );
-         std::sort( members.begin(), members.end() );
          std::string suffix = *(path.end()-1) == '.' ? "" : ".";
-         for ( Json::Value::Members::iterator it = members.begin(); 
-               it != members.end(); 
-               ++it )
-         {
-            const std::string &name = *it;
-            printValueTree( fout, value[name], path + suffix + name );
+         for (auto& [name, _] : value.items()) {
+            printValueTree( fout, value[name], path + suffix + name.c_str());
          }
       }
       break;

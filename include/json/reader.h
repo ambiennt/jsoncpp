@@ -114,7 +114,7 @@ namespace Json {
 
             ErrorInfo() : token_{}, message_{}, extra_{ nullptr } {}
             template <std::convertible_to<decltype(ErrorInfo::message_)> Message>
-            ErrorInfo(Token token, Message&& message, Location extra) : token_{ token }, message_{ std::forward<Message>(message) }, extra_{extra} {}
+            ErrorInfo(Token token, Message&& message, Location extra) : token_{ token }, message_{ std::forward<Message>(message) }, extra_{ extra } {}
         };
 
         typedef std::deque<ErrorInfo> Errors;
