@@ -16,7 +16,6 @@
 #include <stack>
 #include <string>
 #include <iostream>
-#include <concepts>
 #include <utility>
 
 namespace Json {
@@ -115,8 +114,8 @@ namespace Json {
             Location extra_;
 
             ErrorInfo() : token_{}, message_{}, extra_{ nullptr } {}
-            template <std::convertible_to<decltype(ErrorInfo::message_)> Message>
-            ErrorInfo(Token token, Message&& message, Location extra) : token_{ token }, message_{ std::forward<Message>(message) }, extra_{ extra } {}
+            ErrorInfo(Token token, std::string&& message, Location extra) : token_{ token }, message_{ std::move(message) }, extra_{ extra } {}
+            ErrorInfo(Token token, const std::string& message, Location extra) : token_{ token }, message_{ message }, extra_{ extra } {}
         };
 
         typedef std::deque<ErrorInfo> Errors;

@@ -17,7 +17,6 @@
 #include <limits>
 #include <cstdint>
 #include <string_view>
-#include <concepts>
 #include <utility>
 
 #ifdef JSONCPP_ENABLE_ASSERTS
@@ -433,8 +432,8 @@ namespace Json {
 
         PathArgument() : key_{}, index_{ 0 }, kind_{ kindNone } {}
         PathArgument(ArrayIndex index) : key_{}, index_{ index }, kind_{ kindIndex } {}
-        template <std::convertible_to<decltype(PathArgument::key_)> Key>
-        PathArgument(Key&& key) : key_{ std::forward<Key>(key) }, index_{ 0 }, kind_{ kindKey } {}
+        PathArgument(std::string&& key) : key_{ std::move(key) }, index_{ 0 }, kind_{ kindKey } {}
+        PathArgument(const std::string& key) : key_{ key }, index_{ 0 }, kind_{ kindKey } {}
     };
 
     /** \brief Experimental and untested: represents a "path" to access a node.
